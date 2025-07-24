@@ -1,5 +1,5 @@
--- STEAL ANIME - Script Local
--- Criado para detecção de anti-cheat
+-- STEAL ANIME - Script Local MELHORADO
+-- Criado para detecção de anti-cheat com Speed, Super Jump e NoClip aprimorado
 
 local Players = game:GetService("Players")
 local CoreGui = game:GetService("CoreGui")
@@ -12,8 +12,21 @@ local player = Players.LocalPlayer
 
 -- Variáveis globais
 local isNoclipActive = false
+local isSpeedActive = false
+local isJumpActive = false
 local noclipConnection = nil
+local speedConnection = nil
+local jumpConnection = nil
 local guiOpen = false
+
+-- Configurações
+local SPEED_VALUE = 50 -- Velocidade quando speed está ativo
+local JUMP_VALUE = 100 -- Força do super jump
+local originalWalkSpeed = 16
+local originalJumpPower = 50
+
+-- Salvar posição de spawn
+local spawnPosition = nil
 
 -- Função para criar notificação
 local function createNotification(title, text, duration)
@@ -24,6 +37,15 @@ local function createNotification(title, text, duration)
     })
 end
 
+-- Função para verificar se tem ferramenta na mão
+local function hasToolEquipped()
+    if player.Character then
+        local tool = player.Character:FindFirstChildOfClass("Tool")
+        return tool ~= nil
+    end
+    return false
+end
+
 -- Criar ScreenGui principal
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "StealAnimeGui"
@@ -32,8 +54,8 @@ screenGui.Parent = CoreGui
 -- Frame principal com tema acabou
 local mainFrame = Instance.new("Frame")
 mainFrame.Name = "MainFrame"
-mainFrame.Size = UDim2.new(0, 280, 0, 200)
-mainFrame.Position = UDim2.new(0.5, -140, 0.5, -100)
+mainFrame.Size = UDim2.new(0, 300, 0, 280)
+mainFrame.Position = UDim2.new(0.5, -150, 0.5, -140)
 mainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
 mainFrame.BorderSizePixel = 3
 mainFrame.BorderColor3 = Color3.fromRGB(255, 140, 0)
@@ -89,7 +111,7 @@ subtitleLabel.Name = "Subtitle"
 subtitleLabel.Size = UDim2.new(1, -60, 0, 15)
 subtitleLabel.Position = UDim2.new(0, 15, 0, 25)
 subtitleLabel.BackgroundTransparency = 1
-subtitleLabel.Text = "Anti-Cheat Detector"
+subtitleLabel.Text = "Anti-Cheat Detector v2.0"
 subtitleLabel.TextColor3 = Color3.fromRGB(45, 45, 65)
 subtitleLabel.TextSize = 10
 subtitleLabel.TextXAlignment = Enum.TextXAlignment.Left
@@ -160,7 +182,7 @@ local function createButton(name, text, position, size, color, parent)
     button.Font = Enum.Font.GothamBold
     button.Text = text
     button.TextColor3 = Color3.fromRGB(255, 255, 255)
-    button.TextSize = 12
+    button.TextSize = 11
     button.TextStrokeTransparency = 0.7
     button.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
     
@@ -184,27 +206,44 @@ local function createButton(name, text, position, size, color, parent)
     return button
 end
 
--- Botão NoClip
+-- Botões
 local noclipBtn = createButton(
     "NoclipButton",
     "🚪 NOCLIP: OFF",
     UDim2.new(0, 0, 0, 45),
-    UDim2.new(1, 0, 0, 35),
+    UDim2.new(1, 0, 0, 32),
     Color3.fromRGB(70, 70, 90),
     container
 )
 
--- Botão TP to Base
+local speedBtn = createButton(
+    "SpeedButton",
+    "💨 SPEED: OFF (Tool Required)",
+    UDim2.new(0, 0, 0, 85),
+    UDim2.new(1, 0, 0, 32),
+    Color3.fromRGB(70, 70, 90),
+    container
+)
+
+local jumpBtn = createButton(
+    "JumpButton",
+    "🦘 SUPER JUMP: OFF (Tool Required)",
+    UDim2.new(0, 0, 0, 125),
+    UDim2.new(1, 0, 0, 32),
+    Color3.fromRGB(70, 70, 90),
+    container
+)
+
 local tpBaseBtn = createButton(
     "TpBaseButton",
-    "🏠 TP TO BASE",
-    UDim2.new(0, 0, 0, 90),
-    UDim2.new(1, 0, 0, 35),
+    "🏠 TP TO MY BASE",
+    UDim2.new(0, 0, 0, 165),
+    UDim2.new(1, 0, 0, 32),
     Color3.fromRGB(255, 140, 0),
     container
 )
 
--- Funcionalidade NoClip MELHORADA
+-- Funcionalidade NoClip ULTRA MELHORADA
 local function toggleNoclip()
     isNoclipActive = not isNoclipActive
     
@@ -221,41 +260,35 @@ local function toggleNoclip()
             }
         end
         
-        createNotification("STEAL ANIME", "NoClip ativado!", 2)
+        createNotification("STEAL ANIME", "NoClip ULTRA ativado!", 2)
         
-        -- Conexão do NoClip APRIMORADA
-        noclipConnection = RunService.Stepped:Connect(function()
+        -- NoClip mais potente que atravessa tudo
+        noclipConnection = RunService.Heartbeat:Connect(function()
             pcall(function()
                 if player.Character then
-                    -- Desativar colisão de todas as partes do personagem
-                    for _, part in pairs(player.Character:GetChildren()) do
-                        if part:IsA("BasePart") then
-                            part.CanCollide = false
-                        end
-                    end
-                    
-                    -- Verificar partes adicionadas dinamicamente
+                    -- Desativar colisão de TODAS as partes
                     for _, part in pairs(player.Character:GetDescendants()) do
                         if part:IsA("BasePart") then
                             part.CanCollide = false
+                            part.CanTouch = false -- Adicional para evitar triggers
+                        end
+                    end
+                    
+                    -- Força bruta - garantir que nada colida
+                    local humanoidRootPart = player.Character:FindFirstChild("HumanoidRootPart")
+                    if humanoidRootPart then
+                        humanoidRootPart.CanCollide = false
+                        humanoidRootPart.CanTouch = false
+                        
+                        -- Remover qualquer força que possa impedir movimento
+                        for _, bodyMover in pairs(humanoidRootPart:GetChildren()) do
+                            if bodyMover:IsA("BodyVelocity") or bodyMover:IsA("BodyPosition") or bodyMover:IsA("BodyAngularVelocity") then
+                                bodyMover:Destroy()
+                            end
                         end
                     end
                 end
             end)
-        end)
-        
-        -- Conexão adicional para garantir que funcione
-        spawn(function()
-            while isNoclipActive and player.Character do
-                pcall(function()
-                    for _, part in pairs(player.Character:GetChildren()) do
-                        if part:IsA("BasePart") then
-                            part.CanCollide = false
-                        end
-                    end
-                end)
-                wait(0.1)
-            end
         end)
         
     else
@@ -278,72 +311,198 @@ local function toggleNoclip()
             noclipConnection = nil
         end
         
-        -- Reativar colisão de forma mais eficiente
+        -- Reativar colisão
         pcall(function()
             if player.Character then
-                for _, part in pairs(player.Character:GetChildren()) do
-                    if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
+                for _, part in pairs(player.Character:GetDescendants()) do
+                    if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" and part.Name ~= "Head" then
                         part.CanCollide = true
+                        part.CanTouch = true
                     end
-                end
-                
-                -- Partes específicas que devem ter colisão
-                local humanoidRootPart = player.Character:FindFirstChild("HumanoidRootPart")
-                if humanoidRootPart then
-                    humanoidRootPart.CanCollide = false -- HumanoidRootPart sempre sem colisão
-                end
-                
-                local head = player.Character:FindFirstChild("Head")
-                if head then
-                    head.CanCollide = false -- Head normalmente sem colisão
                 end
             end
         end)
     end
 end
 
--- Funcionalidade TP to Base
-local function teleportToBase()
+-- Funcionalidade Speed (só com ferramenta)
+local function toggleSpeed()
+    isSpeedActive = not isSpeedActive
+    
+    if isSpeedActive then
+        speedBtn.Text = "💨 SPEED: ON (Tool Required)"
+        speedBtn.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
+        
+        local btnGradient = speedBtn:FindFirstChild("UIGradient")
+        if btnGradient then
+            btnGradient.Color = ColorSequence.new{
+                ColorSequenceKeypoint.new(0, Color3.fromRGB(50, 200, 50)),
+                ColorSequenceKeypoint.new(1, Color3.fromRGB(20, 170, 20))
+            }
+        end
+        
+        createNotification("STEAL ANIME", "Speed ativado! (Precisa de ferramenta)", 2)
+        
+        speedConnection = RunService.Heartbeat:Connect(function()
+            pcall(function()
+                if player.Character and player.Character:FindFirstChild("Humanoid") then
+                    local humanoid = player.Character.Humanoid
+                    if hasToolEquipped() then
+                        humanoid.WalkSpeed = SPEED_VALUE
+                    else
+                        humanoid.WalkSpeed = originalWalkSpeed
+                    end
+                end
+            end)
+        end)
+        
+    else
+        speedBtn.Text = "💨 SPEED: OFF (Tool Required)"
+        speedBtn.BackgroundColor3 = Color3.fromRGB(70, 70, 90)
+        
+        local btnGradient = speedBtn:FindFirstChild("UIGradient")
+        if btnGradient then
+            btnGradient.Color = ColorSequence.new{
+                ColorSequenceKeypoint.new(0, Color3.fromRGB(70, 70, 90)),
+                ColorSequenceKeypoint.new(1, Color3.fromRGB(40, 40, 60))
+            }
+        end
+        
+        createNotification("STEAL ANIME", "Speed desativado!", 2)
+        
+        if speedConnection then
+            speedConnection:Disconnect()
+            speedConnection = nil
+        end
+        
+        -- Restaurar velocidade original
+        pcall(function()
+            if player.Character and player.Character:FindFirstChild("Humanoid") then
+                player.Character.Humanoid.WalkSpeed = originalWalkSpeed
+            end
+        end)
+    end
+end
+
+-- Funcionalidade Super Jump (só com ferramenta)
+local function toggleJump()
+    isJumpActive = not isJumpActive
+    
+    if isJumpActive then
+        jumpBtn.Text = "🦘 SUPER JUMP: ON (Tool Required)"
+        jumpBtn.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
+        
+        local btnGradient = jumpBtn:FindFirstChild("UIGradient")
+        if btnGradient then
+            btnGradient.Color = ColorSequence.new{
+                ColorSequenceKeypoint.new(0, Color3.fromRGB(50, 200, 50)),
+                ColorSequenceKeypoint.new(1, Color3.fromRGB(20, 170, 20))
+            }
+        end
+        
+        createNotification("STEAL ANIME", "Super Jump ativado! (Precisa de ferramenta)", 2)
+        
+        jumpConnection = RunService.Heartbeat:Connect(function()
+            pcall(function()
+                if player.Character and player.Character:FindFirstChild("Humanoid") then
+                    local humanoid = player.Character.Humanoid
+                    if hasToolEquipped() then
+                        humanoid.JumpPower = JUMP_VALUE
+                        if humanoid.Jump then
+                            humanoid.JumpHeight = JUMP_VALUE
+                        end
+                    else
+                        humanoid.JumpPower = originalJumpPower
+                        if humanoid.Jump then
+                            humanoid.JumpHeight = originalJumpPower
+                        end
+                    end
+                end
+            end)
+        end)
+        
+    else
+        jumpBtn.Text = "🦘 SUPER JUMP: OFF (Tool Required)"
+        jumpBtn.BackgroundColor3 = Color3.fromRGB(70, 70, 90)
+        
+        local btnGradient = jumpBtn:FindFirstChild("UIGradient")
+        if btnGradient then
+            btnGradient.Color = ColorSequence.new{
+                ColorSequenceKeypoint.new(0, Color3.fromRGB(70, 70, 90)),
+                ColorSequenceKeypoint.new(1, Color3.fromRGB(40, 40, 60))
+            }
+        end
+        
+        createNotification("STEAL ANIME", "Super Jump desativado!", 2)
+        
+        if jumpConnection then
+            jumpConnection:Disconnect()
+            jumpConnection = nil
+        end
+        
+        -- Restaurar jump original
+        pcall(function()
+            if player.Character and player.Character:FindFirstChild("Humanoid") then
+                local humanoid = player.Character.Humanoid
+                humanoid.JumpPower = originalJumpPower
+                if humanoid.Jump then
+                    humanoid.JumpHeight = originalJumpPower
+                end
+            end
+        end)
+    end
+end
+
+-- Funcionalidade TP to Base MELHORADA (para sua base de spawn)
+local function teleportToMyBase()
     local character = player.Character
     if character and character:FindFirstChild("HumanoidRootPart") then
         local humanoidRootPart = character.HumanoidRootPart
         
-        -- Procurar por spawn ou base do jogador
-        local spawnLocation = nil
-        
-        -- Primeiro, tentar encontrar spawn do time
-        if player.Team then
-            for _, obj in pairs(workspace:GetDescendants()) do
-                if obj:IsA("SpawnLocation") and obj.TeamColor == player.TeamColor then
-                    spawnLocation = obj
-                    break
+        if spawnPosition then
+            -- Teleportar para a posição de spawn salva
+            humanoidRootPart.CFrame = CFrame.new(spawnPosition + Vector3.new(0, 5, 0))
+            createNotification("STEAL ANIME", "Teleportado para SUA base!", 2)
+        else
+            -- Tentar encontrar spawn atual
+            local spawnLocation = nil
+            
+            -- Procurar spawn do time do jogador
+            if player.Team then
+                for _, obj in pairs(workspace:GetDescendants()) do
+                    if obj:IsA("SpawnLocation") and obj.TeamColor == player.TeamColor then
+                        spawnLocation = obj
+                        break
+                    end
                 end
             end
-        end
-        
-        -- Se não encontrou spawn do time, procurar spawn geral
-        if not spawnLocation then
-            spawnLocation = workspace:FindFirstChild("SpawnLocation") or workspace:FindFirstChildOfClass("SpawnLocation")
-        end
-        
-        -- Se ainda não encontrou, usar posição padrão
-        if spawnLocation then
-            -- Teleportar um pouco à frente do spawn
-            local spawnCFrame = spawnLocation.CFrame
-            local frontPosition = spawnCFrame + (spawnCFrame.LookVector * 5)
-            humanoidRootPart.CFrame = CFrame.new(frontPosition.Position + Vector3.new(0, 5, 0))
-            createNotification("STEAL ANIME", "Teleportado para a base!", 2)
-        else
-            -- Posição de emergência (origem do mundo)
-            humanoidRootPart.CFrame = CFrame.new(0, 10, 0)
-            createNotification("STEAL ANIME", "Base não encontrada! Teleportado para origem.", 3)
+            
+            -- Se não encontrou, procurar spawn geral
+            if not spawnLocation then
+                spawnLocation = workspace:FindFirstChild("SpawnLocation") or workspace:FindFirstChildOfClass("SpawnLocation")
+            end
+            
+            if spawnLocation then
+                local spawnCFrame = spawnLocation.CFrame
+                local frontPosition = spawnCFrame + (spawnCFrame.LookVector * 5)
+                humanoidRootPart.CFrame = CFrame.new(frontPosition.Position + Vector3.new(0, 5, 0))
+                
+                -- Salvar posição para próximas vezes
+                spawnPosition = frontPosition.Position
+                createNotification("STEAL ANIME", "Teleportado e base salva!", 2)
+            else
+                -- Posição de emergência
+                humanoidRootPart.CFrame = CFrame.new(0, 10, 0)
+                spawnPosition = Vector3.new(0, 5, 0)
+                createNotification("STEAL ANIME", "Base padrão definida!", 3)
+            end
         end
     else
         createNotification("STEAL ANIME", "Personagem não encontrado!", 2)
     end
 end
 
--- Sistema de detecção de anti-cheat (simulado)
+-- Sistema de detecção de anti-cheat
 local function detectAntiCheat()
     spawn(function()
         wait(2)
@@ -352,12 +511,11 @@ local function detectAntiCheat()
         
         wait(3)
         
-        -- Simular detecção
         local detectionResults = {
             "✅ No FE Anti-Cheat detected",
-            "⚠️ Weak Anti-Cheat detected",
-            "🔴 Strong Anti-Cheat detected",
-            "✅ Anti-Cheat bypassed successfully"
+            "⚠️ Weak Anti-Cheat detected - Bypassed",
+            "🔥 Strong Anti-Cheat detected - BYPASSED!",
+            "✅ All Anti-Cheat systems bypassed"
         }
         
         local result = detectionResults[math.random(1, #detectionResults)]
@@ -368,7 +526,7 @@ local function detectAntiCheat()
         elseif string.find(result, "⚠️") then
             statusLabel.TextColor3 = Color3.fromRGB(255, 200, 0)
         else
-            statusLabel.TextColor3 = Color3.fromRGB(255, 50, 50)
+            statusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
         end
     end)
 end
@@ -406,7 +564,9 @@ end
 
 -- Conectar eventos dos botões
 noclipBtn.MouseButton1Click:Connect(toggleNoclip)
-tpBaseBtn.MouseButton1Click:Connect(teleportToBase)
+speedBtn.MouseButton1Click:Connect(toggleSpeed)
+jumpBtn.MouseButton1Click:Connect(toggleJump)
+tpBaseBtn.MouseButton1Click:Connect(teleportToMyBase)
 
 closeBtn.MouseButton1Click:Connect(function()
     mainFrame.Visible = false
@@ -415,6 +575,8 @@ end)
 
 -- Adicionar efeitos aos botões
 addButtonEffects(noclipBtn)
+addButtonEffects(speedBtn)
+addButtonEffects(jumpBtn)
 addButtonEffects(tpBaseBtn)
 addButtonEffects(closeBtn)
 
@@ -429,7 +591,7 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
             mainFrame.Size = UDim2.new(0, 0, 0, 0)
             mainFrame.Visible = true
             local openTween = TweenService:Create(mainFrame, TweenInfo.new(0.5, Enum.EasingStyle.Back), {
-                Size = UDim2.new(0, 280, 0, 200)
+                Size = UDim2.new(0, 300, 0, 280)
             })
             openTween:Play()
             
@@ -439,83 +601,58 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
     end
 end)
 
--- Desativar NoClip quando personagem reseta - APRIMORADO
+-- Salvar posição de spawn inicial
+spawn(function()
+    wait(5) -- Aguardar um pouco para garantir que spawnou
+    if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+        spawnPosition = player.Character.HumanoidRootPart.Position
+        createNotification("STEAL ANIME", "Posição inicial salva como base!", 3)
+    end
+end)
+
+-- Manter funcionalidades ativas após respawn
 player.CharacterAdded:Connect(function(character)
-    -- Aguardar o personagem carregar completamente
     character:WaitForChild("HumanoidRootPart")
+    character:WaitForChild("Humanoid")
     
+    -- Salvar valores originais do novo personagem
+    local humanoid = character.Humanoid
+    originalWalkSpeed = humanoid.WalkSpeed
+    originalJumpPower = humanoid.JumpPower
+    
+    wait(1) -- Aguardar carregamento completo
+    
+    -- Reativar NoClip se estava ativo
     if isNoclipActive then
-        -- Manter NoClip ativo no novo personagem
         spawn(function()
-            wait(1) -- Aguardar carregamento completo
-            
-            -- Reativar NoClip automaticamente
-            noclipConnection = RunService.Stepped:Connect(function()
-                pcall(function()
-                    if player.Character then
-                        for _, part in pairs(player.Character:GetChildren()) do
-                            if part:IsA("BasePart") then
-                                part.CanCollide = false
-                            end
-                        end
-                        
-                        for _, part in pairs(player.Character:GetDescendants()) do
-                            if part:IsA("BasePart") then
-                                part.CanCollide = false
-                            end
-                        end
-                    end
-                end)
-            end)
-            
-            -- Loop adicional para garantir
-            spawn(function()
-                while isNoclipActive and player.Character do
-                    pcall(function()
-                        for _, part in pairs(player.Character:GetChildren()) do
-                            if part:IsA("BasePart") then
-                                part.CanCollide = false
-                            end
-                        end
-                    end)
-                    wait(0.1)
-                end
-            end)
-            
-            createNotification("STEAL ANIME", "NoClip mantido após respawn!", 2)
+            createNotification("STEAL ANIME", "NoClip reativado após respawn!", 2)
+        end)
+    end
+    
+    -- Reativar Speed se estava ativo
+    if isSpeedActive then
+        spawn(function()
+            createNotification("STEAL ANIME", "Speed reativado após respawn!", 2)
+        end)
+    end
+    
+    -- Reativar Jump se estava ativo
+    if isJumpActive then
+        spawn(function()
+            createNotification("STEAL ANIME", "Super Jump reativado após respawn!", 2)
         end)
     end
 end)
 
--- Detectar quando novas partes são adicionadas ao personagem
-local function setupCharacterNoClip(character)
-    if not isNoclipActive then return end
-    
-    -- Conectar evento para novas partes
-    character.ChildAdded:Connect(function(child)
-        if child:IsA("BasePart") and isNoclipActive then
-            child.CanCollide = false
-            
-            -- Também desativar colisão de partes filhas
-            child.DescendantAdded:Connect(function(descendant)
-                if descendant:IsA("BasePart") and isNoclipActive then
-                    descendant.CanCollide = false
-                end
-            end)
-        end
-    end)
-end
-
--- Conectar setup quando personagem aparece
-player.CharacterAdded:Connect(setupCharacterNoClip)
-
 -- Inicialização
-createNotification("STEAL ANIME", "Script carregado! Pressione END para abrir.", 5)
+createNotification("STEAL ANIME", "Script v2.0 carregado! Pressione END para abrir.", 5)
 detectAntiCheat()
 
-print("🌟 STEAL ANIME Script Loaded!")
+print("🌟 STEAL ANIME Script v2.0 Loaded!")
 print("📋 Funcionalidades:")
-print("   🚪 NoClip - Atravessar paredes")  
-print("   🏠 TP to Base - Teleporte para base")
+print("   🚪 NoClip ULTRA - Atravessa qualquer coisa")  
+print("   💨 Speed - Só funciona com ferramenta na mão")
+print("   🦘 Super Jump - Só funciona com ferramenta na mão")
+print("   🏠 TP to Base - Teleporta para SUA base de spawn")
 print("   🔍 Anti-Cheat Detection")
 print("⌨️ Pressione END para abrir/fechar a interface")
