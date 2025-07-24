@@ -204,7 +204,7 @@ local tpBaseBtn = createButton(
     container
 )
 
--- Funcionalidade NoClip
+-- Funcionalidade NoClip MELHORADA
 local function toggleNoclip()
     isNoclipActive = not isNoclipActive
     
@@ -223,16 +223,41 @@ local function toggleNoclip()
         
         createNotification("STEAL ANIME", "NoClip ativado!", 2)
         
-        -- Conexão do NoClip
-        noclipConnection = RunService.Heartbeat:Connect(function()
-            if player.Character then
-                for _, part in pairs(player.Character:GetDescendants()) do
-                    if part:IsA("BasePart") and part.CanCollide then
-                        part.CanCollide = false
+        -- Conexão do NoClip APRIMORADA
+        noclipConnection = RunService.Stepped:Connect(function()
+            pcall(function()
+                if player.Character then
+                    -- Desativar colisão de todas as partes do personagem
+                    for _, part in pairs(player.Character:GetChildren()) do
+                        if part:IsA("BasePart") then
+                            part.CanCollide = false
+                        end
+                    end
+                    
+                    -- Verificar partes adicionadas dinamicamente
+                    for _, part in pairs(player.Character:GetDescendants()) do
+                        if part:IsA("BasePart") then
+                            part.CanCollide = false
+                        end
                     end
                 end
+            end)
+        end)
+        
+        -- Conexão adicional para garantir que funcione
+        spawn(function()
+            while isNoclipActive and player.Character do
+                pcall(function()
+                    for _, part in pairs(player.Character:GetChildren()) do
+                        if part:IsA("BasePart") then
+                            part.CanCollide = false
+                        end
+                    end
+                end)
+                wait(0.1)
             end
         end)
+        
     else
         noclipBtn.Text = "🚪 NOCLIP: OFF"
         noclipBtn.BackgroundColor3 = Color3.fromRGB(70, 70, 90)
@@ -253,14 +278,27 @@ local function toggleNoclip()
             noclipConnection = nil
         end
         
-        -- Reativar colisão
-        if player.Character then
-            for _, part in pairs(player.Character:GetDescendants()) do
-                if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
-                    part.CanCollide = true
+        -- Reativar colisão de forma mais eficiente
+        pcall(function()
+            if player.Character then
+                for _, part in pairs(player.Character:GetChildren()) do
+                    if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
+                        part.CanCollide = true
+                    end
+                end
+                
+                -- Partes específicas que devem ter colisão
+                local humanoidRootPart = player.Character:FindFirstChild("HumanoidRootPart")
+                if humanoidRootPart then
+                    humanoidRootPart.CanCollide = false -- HumanoidRootPart sempre sem colisão
+                end
+                
+                local head = player.Character:FindFirstChild("Head")
+                if head then
+                    head.CanCollide = false -- Head normalmente sem colisão
                 end
             end
-        end
+        end)
     end
 end
 
@@ -401,19 +439,75 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
     end
 end)
 
--- Desativar NoClip quando personagem reseta
-player.CharacterAdded:Connect(function()
+-- Desativar NoClip quando personagem reseta - APRIMORADO
+player.CharacterAdded:Connect(function(character)
+    -- Aguardar o personagem carregar completamente
+    character:WaitForChild("HumanoidRootPart")
+    
     if isNoclipActive then
-        isNoclipActive = false
-        noclipBtn.Text = "🚪 NOCLIP: OFF"
-        noclipBtn.BackgroundColor3 = Color3.fromRGB(70, 70, 90)
-        
-        if noclipConnection then
-            noclipConnection:Disconnect()
-            noclipConnection = nil
-        end
+        -- Manter NoClip ativo no novo personagem
+        spawn(function()
+            wait(1) -- Aguardar carregamento completo
+            
+            -- Reativar NoClip automaticamente
+            noclipConnection = RunService.Stepped:Connect(function()
+                pcall(function()
+                    if player.Character then
+                        for _, part in pairs(player.Character:GetChildren()) do
+                            if part:IsA("BasePart") then
+                                part.CanCollide = false
+                            end
+                        end
+                        
+                        for _, part in pairs(player.Character:GetDescendants()) do
+                            if part:IsA("BasePart") then
+                                part.CanCollide = false
+                            end
+                        end
+                    end
+                end)
+            end)
+            
+            -- Loop adicional para garantir
+            spawn(function()
+                while isNoclipActive and player.Character do
+                    pcall(function()
+                        for _, part in pairs(player.Character:GetChildren()) do
+                            if part:IsA("BasePart") then
+                                part.CanCollide = false
+                            end
+                        end
+                    end)
+                    wait(0.1)
+                end
+            end)
+            
+            createNotification("STEAL ANIME", "NoClip mantido após respawn!", 2)
+        end)
     end
 end)
+
+-- Detectar quando novas partes são adicionadas ao personagem
+local function setupCharacterNoClip(character)
+    if not isNoclipActive then return end
+    
+    -- Conectar evento para novas partes
+    character.ChildAdded:Connect(function(child)
+        if child:IsA("BasePart") and isNoclipActive then
+            child.CanCollide = false
+            
+            -- Também desativar colisão de partes filhas
+            child.DescendantAdded:Connect(function(descendant)
+                if descendant:IsA("BasePart") and isNoclipActive then
+                    descendant.CanCollide = false
+                end
+            end)
+        end
+    end)
+end
+
+-- Conectar setup quando personagem aparece
+player.CharacterAdded:Connect(setupCharacterNoClip)
 
 -- Inicialização
 createNotification("STEAL ANIME", "Script carregado! Pressione END para abrir.", 5)
