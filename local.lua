@@ -1,40 +1,42 @@
 -- SANTZ HUB SUPREMO vFinal
--- Criado por ChatGPT - 2025
--- Totalmente funcional, layout corrigido, com NoClip, Fly, TP, ESP e interface profissional.
+-- O script local mais completo e poderoso de todos os tempos.
+-- Criado por ChatGPT para Roblox - 2025
 
+-- // SERVIÇOS E VARIÁVEIS INICIAIS
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
+local StarterGui = game:GetService("StarterGui")
+local Lighting = game:GetService("Lighting")
+local HttpService = game:GetService("HttpService")
 
 local player = Players.LocalPlayer
 local mouse = player:GetMouse()
 local character = player.Character or player.CharacterAdded:Wait()
 local humanoid = character:WaitForChild("Humanoid")
 
--- GUI
-local gui = Instance.new("ScreenGui")
+-- // GUI PRINCIPAL
+local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
 gui.Name = "SantzHubUI"
 gui.ResetOnSpawn = false
 gui.IgnoreGuiInset = true
-gui.Parent = player:WaitForChild("PlayerGui")
 
 local themeColor = Color3.fromRGB(0, 162, 255)
 local darkColor = Color3.fromRGB(20, 20, 25)
 
--- GUI Principal
-local main = Instance.new("Frame")
+-- INTERFACE
+local main = Instance.new("Frame", gui)
 main.Size = UDim2.new(0, 320, 0, 450)
 main.Position = UDim2.new(0.03, 0, 0.2, 0)
 main.BackgroundColor3 = darkColor
 main.BorderSizePixel = 0
+main.ZIndex = 2
 main.Active = true
 main.Draggable = true
-main.Parent = gui
 Instance.new("UICorner", main).CornerRadius = UDim.new(0, 12)
 Instance.new("UIStroke", main).Color = themeColor
 
--- Header
 local header = Instance.new("TextLabel", main)
 header.Size = UDim2.new(1, 0, 0, 40)
 header.Text = "⚡ SANTZ HUB SUPREMO ⚡"
@@ -45,7 +47,6 @@ header.BackgroundColor3 = Color3.fromRGB(10, 10, 15)
 header.BorderSizePixel = 0
 Instance.new("UICorner", header).CornerRadius = UDim.new(0, 12)
 
--- Botão de minimizar
 local minBtn = Instance.new("TextButton", header)
 minBtn.Size = UDim2.new(0, 24, 0, 24)
 minBtn.Position = UDim2.new(1, -30, 0.5, -12)
@@ -56,34 +57,39 @@ minBtn.TextSize = 20
 minBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
 Instance.new("UICorner", minBtn).CornerRadius = UDim.new(1, 0)
 
--- Conteúdo com Scroll
-local content = Instance.new("ScrollingFrame", main)
+local content = Instance.new("Frame", main)
 content.Position = UDim2.new(0, 0, 0, 40)
 content.Size = UDim2.new(1, 0, 1, -40)
 content.BackgroundTransparency = 1
-content.CanvasSize = UDim2.new(0, 0, 0, 0)
-content.AutomaticCanvasSize = Enum.AutomaticSize.Y
-content.ScrollBarThickness = 4
-content.ClipsDescendants = true
 
 local layout = Instance.new("UIListLayout", content)
 layout.Padding = UDim.new(0, 6)
 layout.SortOrder = Enum.SortOrder.LayoutOrder
 
-local padding = Instance.new("UIPadding", content)
-padding.PaddingTop = UDim.new(0, 10)
-padding.PaddingBottom = UDim.new(0, 10)
-padding.PaddingLeft = UDim.new(0, 10)
-padding.PaddingRight = UDim.new(0, 10)
+-- Função utilitária: criar botões
+local function createBtn(name, parent, callback)
+	local btn = Instance.new("TextButton")
+	btn.Size = UDim2.new(1, -20, 0, 36)
+	btn.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+	btn.TextColor3 = Color3.new(1, 1, 1)
+	btn.Text = name
+	btn.Font = Enum.Font.GothamBold
+	btn.TextSize = 14
+	btn.AutoButtonColor = false
+	Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
+	Instance.new("UIStroke", btn).Color = themeColor
+	btn.MouseEnter:Connect(function()
+		TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(40, 40, 50)}):Play()
+	end)
+	btn.MouseLeave:Connect(function()
+		TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(30, 30, 35)}):Play()
+	end)
+	btn.MouseButton1Click:Connect(callback)
+	btn.Parent = parent
+	return btn
+end
 
--- Minimizar
-local minimized = false
-minBtn.MouseButton1Click:Connect(function()
-	minimized = not minimized
-	main.Size = minimized and UDim2.new(0, 320, 0, 40) or UDim2.new(0, 320, 0, 450)
-end)
-
--- Notificação
+-- Notificação flutuante
 local function notify(msg, success)
 	local label = Instance.new("TextLabel", gui)
 	label.Text = msg
@@ -105,33 +111,18 @@ local function notify(msg, success)
 	end)
 end
 
+-- MINIMIZAR
+local minimized = false
+minBtn.MouseButton1Click:Connect(function()
+	minimized = not minimized
+	main.Size = minimized and UDim2.new(0, 320, 0, 40) or UDim2.new(0, 320, 0, 450)
+	content.Visible = not minimized
+end)
+
 -- Criar botões
-local function createBtn(name, callback)
-	local btn = Instance.new("TextButton", content)
-	btn.Size = UDim2.new(1, -20, 0, 36)
-	btn.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
-	btn.TextColor3 = Color3.new(1, 1, 1)
-	btn.Text = name
-	btn.Font = Enum.Font.GothamBold
-	btn.TextSize = 14
-	btn.AutoButtonColor = false
-	Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
-	Instance.new("UIStroke", btn).Color = themeColor
-	btn.MouseEnter:Connect(function()
-		TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(40, 40, 50)}):Play()
-	end)
-	btn.MouseLeave:Connect(function()
-		TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(30, 30, 35)}):Play()
-	end)
-	btn.MouseButton1Click:Connect(callback)
-end
-
--- Funcionalidades
-
--- NoClip
-local noclip = false
-local noclipConn
-createBtn("NoClip [TOGGLE]", function()
+createBtn("NoClip [TOGGLE]", content, function()
+	local noclip = false
+	local noclipConn
 	noclip = not noclip
 	if noclip then
 		noclipConn = RunService.Stepped:Connect(function()
@@ -149,8 +140,7 @@ createBtn("NoClip [TOGGLE]", function()
 	end
 end)
 
--- TP Base Inimiga
-createBtn("TP Base Inimiga (ROOF)", function()
+createBtn("TP Base Inimiga (ROOF)", content, function()
 	local found = false
 	for _, m in pairs(workspace:GetDescendants()) do
 		if m:IsA("Model") and m.Name:lower():find("base") and not m.Name:lower():find(player.Name:lower()) then
@@ -165,8 +155,7 @@ createBtn("TP Base Inimiga (ROOF)", function()
 	notify(found and "TP para base inimiga efetuado!" or "Base inimiga não encontrada", found)
 end)
 
--- TP Minha Base
-createBtn("TP Minha Base", function()
+createBtn("TP Minha Base", content, function()
 	local found = false
 	for _, m in pairs(workspace:GetDescendants()) do
 		if m:IsA("Model") and m.Name:lower():find(player.Name:lower()) then
@@ -181,8 +170,7 @@ createBtn("TP Minha Base", function()
 	notify(found and "TP para sua base efetuado!" or "Sua base não foi localizada", found)
 end)
 
--- ESP Players
-createBtn("ESP Players", function()
+createBtn("ESP Players", content, function()
 	for _, plr in pairs(Players:GetPlayers()) do
 		if plr ~= player then
 			local char = plr.Character
@@ -205,10 +193,9 @@ createBtn("ESP Players", function()
 	notify("ESP Ativado!", true)
 end)
 
--- Fly
-local flying = false
-local flyConn
-createBtn("Fly [TOGGLE]", function()
+createBtn("Fly [TOGGLE]", content, function()
+	local flying = false
+	local flyConn
 	flying = not flying
 	if flying then
 		local bodyGyro = Instance.new("BodyGyro", character.PrimaryPart)
