@@ -1,54 +1,89 @@
 -- SANTZ HUB SUPREMO vFinal
--- O script local mais completo e poderoso de todos os tempos.
--- Criado por ChatGPT para Roblox - 2025
+-- Criado por ChatGPT - 2025
+-- Totalmente funcional, layout corrigido, com NoClip, Fly, TP, ESP e interface profissional.
 
--- // SERVIÇOS E VARIÁVEIS INICIAIS
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
-local StarterGui = game:GetService("StarterGui")
-local Lighting = game:GetService("Lighting")
-local HttpService = game:GetService("HttpService")
 
 local player = Players.LocalPlayer
 local mouse = player:GetMouse()
 local character = player.Character or player.CharacterAdded:Wait()
 local humanoid = character:WaitForChild("Humanoid")
 
--- // GUI PRINCIPAL
-local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+-- GUI
+local gui = Instance.new("ScreenGui")
 gui.Name = "SantzHubUI"
 gui.ResetOnSpawn = false
 gui.IgnoreGuiInset = true
+gui.Parent = player:WaitForChild("PlayerGui")
 
 local themeColor = Color3.fromRGB(0, 162, 255)
 local darkColor = Color3.fromRGB(20, 20, 25)
 
--- Função utilitária: criar botões
-local function createBtn(name, parent, callback)
-	local btn = Instance.new("TextButton", parent)
-	btn.Size = UDim2.new(1, -20, 0, 36)
-	btn.Position = UDim2.new(0, 10, 0, 0)
-	btn.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
-	btn.TextColor3 = Color3.new(1, 1, 1)
-	btn.Text = name
-	btn.Font = Enum.Font.GothamBold
-	btn.TextSize = 14
-	btn.AutoButtonColor = false
-	Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
-	Instance.new("UIStroke", btn).Color = themeColor
-	btn.MouseEnter:Connect(function()
-		TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(40, 40, 50)}):Play()
-	end)
-	btn.MouseLeave:Connect(function()
-		TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(30, 30, 35)}):Play()
-	end)
-	btn.MouseButton1Click:Connect(callback)
-	return btn
-end
+-- GUI Principal
+local main = Instance.new("Frame")
+main.Size = UDim2.new(0, 320, 0, 450)
+main.Position = UDim2.new(0.03, 0, 0.2, 0)
+main.BackgroundColor3 = darkColor
+main.BorderSizePixel = 0
+main.Active = true
+main.Draggable = true
+main.Parent = gui
+Instance.new("UICorner", main).CornerRadius = UDim.new(0, 12)
+Instance.new("UIStroke", main).Color = themeColor
 
--- Notificação flutuante
+-- Header
+local header = Instance.new("TextLabel", main)
+header.Size = UDim2.new(1, 0, 0, 40)
+header.Text = "⚡ SANTZ HUB SUPREMO ⚡"
+header.TextColor3 = themeColor
+header.Font = Enum.Font.GothamBold
+header.TextSize = 16
+header.BackgroundColor3 = Color3.fromRGB(10, 10, 15)
+header.BorderSizePixel = 0
+Instance.new("UICorner", header).CornerRadius = UDim.new(0, 12)
+
+-- Botão de minimizar
+local minBtn = Instance.new("TextButton", header)
+minBtn.Size = UDim2.new(0, 24, 0, 24)
+minBtn.Position = UDim2.new(1, -30, 0.5, -12)
+minBtn.Text = "-"
+minBtn.TextColor3 = Color3.new(1, 1, 1)
+minBtn.Font = Enum.Font.GothamBold
+minBtn.TextSize = 20
+minBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+Instance.new("UICorner", minBtn).CornerRadius = UDim.new(1, 0)
+
+-- Conteúdo com Scroll
+local content = Instance.new("ScrollingFrame", main)
+content.Position = UDim2.new(0, 0, 0, 40)
+content.Size = UDim2.new(1, 0, 1, -40)
+content.BackgroundTransparency = 1
+content.CanvasSize = UDim2.new(0, 0, 0, 0)
+content.AutomaticCanvasSize = Enum.AutomaticSize.Y
+content.ScrollBarThickness = 4
+content.ClipsDescendants = true
+
+local layout = Instance.new("UIListLayout", content)
+layout.Padding = UDim.new(0, 6)
+layout.SortOrder = Enum.SortOrder.LayoutOrder
+
+local padding = Instance.new("UIPadding", content)
+padding.PaddingTop = UDim.new(0, 10)
+padding.PaddingBottom = UDim.new(0, 10)
+padding.PaddingLeft = UDim.new(0, 10)
+padding.PaddingRight = UDim.new(0, 10)
+
+-- Minimizar
+local minimized = false
+minBtn.MouseButton1Click:Connect(function()
+	minimized = not minimized
+	main.Size = minimized and UDim2.new(0, 320, 0, 40) or UDim2.new(0, 320, 0, 450)
+end)
+
+-- Notificação
 local function notify(msg, success)
 	local label = Instance.new("TextLabel", gui)
 	label.Text = msg
@@ -70,58 +105,33 @@ local function notify(msg, success)
 	end)
 end
 
--- INTERFACE
-local main = Instance.new("Frame", gui)
-main.Size = UDim2.new(0, 320, 0, 450)
-main.Position = UDim2.new(0.03, 0, 0.2, 0)
-main.BackgroundColor3 = darkColor
-main.BorderSizePixel = 0
-main.ZIndex = 2
-main.Active = true
-main.Draggable = true
-Instance.new("UICorner", main).CornerRadius = UDim.new(0, 12)
-Instance.new("UIStroke", main).Color = themeColor
+-- Criar botões
+local function createBtn(name, callback)
+	local btn = Instance.new("TextButton", content)
+	btn.Size = UDim2.new(1, -20, 0, 36)
+	btn.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+	btn.TextColor3 = Color3.new(1, 1, 1)
+	btn.Text = name
+	btn.Font = Enum.Font.GothamBold
+	btn.TextSize = 14
+	btn.AutoButtonColor = false
+	Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
+	Instance.new("UIStroke", btn).Color = themeColor
+	btn.MouseEnter:Connect(function()
+		TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(40, 40, 50)}):Play()
+	end)
+	btn.MouseLeave:Connect(function()
+		TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(30, 30, 35)}):Play()
+	end)
+	btn.MouseButton1Click:Connect(callback)
+end
 
-local header = Instance.new("TextLabel", main)
-header.Size = UDim2.new(1, 0, 0, 40)
-header.Text = "⚡ SANTZ HUB SUPREMO ⚡"
-header.TextColor3 = themeColor
-header.Font = Enum.Font.GothamBold
-header.TextSize = 16
-header.BackgroundColor3 = Color3.fromRGB(10, 10, 15)
-header.BorderSizePixel = 0
-Instance.new("UICorner", header).CornerRadius = UDim.new(0, 12)
+-- Funcionalidades
 
-local minBtn = Instance.new("TextButton", header)
-minBtn.Size = UDim2.new(0, 24, 0, 24)
-minBtn.Position = UDim2.new(1, -30, 0.5, -12)
-minBtn.Text = "-"
-minBtn.TextColor3 = Color3.new(1, 1, 1)
-minBtn.Font = Enum.Font.GothamBold
-minBtn.TextSize = 20
-minBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
-Instance.new("UICorner", minBtn).CornerRadius = UDim.new(1, 0)
-
-local content = Instance.new("Frame", main)
-content.Position = UDim2.new(0, 0, 0, 40)
-content.Size = UDim2.new(1, 0, 1, -40)
-content.BackgroundTransparency = 1
-
-local layout = Instance.new("UIListLayout", content)
-layout.Padding = UDim.new(0, 6)
-layout.SortOrder = Enum.SortOrder.LayoutOrder
-
--- MINIMIZAR
-local minimized = false
-minBtn.MouseButton1Click:Connect(function()
-	minimized = not minimized
-	main.Size = minimized and UDim2.new(0, 320, 0, 40) or UDim2.new(0, 320, 0, 450)
-end)
-
--- Noclip
+-- NoClip
 local noclip = false
 local noclipConn
-createBtn("NoClip [TOGGLE]", content, function()
+createBtn("NoClip [TOGGLE]", function()
 	noclip = not noclip
 	if noclip then
 		noclipConn = RunService.Stepped:Connect(function()
@@ -139,8 +149,8 @@ createBtn("NoClip [TOGGLE]", content, function()
 	end
 end)
 
--- TP Inimigo
-createBtn("TP Base Inimiga (ROOF)", content, function()
+-- TP Base Inimiga
+createBtn("TP Base Inimiga (ROOF)", function()
 	local found = false
 	for _, m in pairs(workspace:GetDescendants()) do
 		if m:IsA("Model") and m.Name:lower():find("base") and not m.Name:lower():find(player.Name:lower()) then
@@ -156,7 +166,7 @@ createBtn("TP Base Inimiga (ROOF)", content, function()
 end)
 
 -- TP Minha Base
-createBtn("TP Minha Base", content, function()
+createBtn("TP Minha Base", function()
 	local found = false
 	for _, m in pairs(workspace:GetDescendants()) do
 		if m:IsA("Model") and m.Name:lower():find(player.Name:lower()) then
@@ -171,8 +181,8 @@ createBtn("TP Minha Base", content, function()
 	notify(found and "TP para sua base efetuado!" or "Sua base não foi localizada", found)
 end)
 
--- ESP
-createBtn("ESP Players", content, function()
+-- ESP Players
+createBtn("ESP Players", function()
 	for _, plr in pairs(Players:GetPlayers()) do
 		if plr ~= player then
 			local char = plr.Character
@@ -195,10 +205,10 @@ createBtn("ESP Players", content, function()
 	notify("ESP Ativado!", true)
 end)
 
--- Fly Toggle
+-- Fly
 local flying = false
 local flyConn
-createBtn("Fly [TOGGLE]", content, function()
+createBtn("Fly [TOGGLE]", function()
 	flying = not flying
 	if flying then
 		local bodyGyro = Instance.new("BodyGyro", character.PrimaryPart)
