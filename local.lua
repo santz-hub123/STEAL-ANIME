@@ -1,103 +1,123 @@
--- LocalScript
+-- LocalScript - StarterPlayer > StarterPlayerScripts
 
+-- Serviços
 local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
 local player = Players.LocalPlayer
 local mouse = player:GetMouse()
-local UIS = game:GetService("UserInputService")
 
--- COORDENADAS
-local enemyBaseRoof = Vector3.new(100, 50, 100) -- Altere conforme o mapa
-local myBase = Vector3.new(-50, 10, -50)        -- Altere conforme o mapa
+-- Coordenadas de teleport
+local ROOF_POSITION = Vector3.new(100, 60, 100) -- <=== Altere para o teto da base inimiga
+local MY_BASE_POSITION = Vector3.new(-50, 10, -50) -- <=== Altere para sua base
 
--- GUI SETUP
-local screenGui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
-screenGui.Name = "CustomGui"
-screenGui.ResetOnSpawn = false
+-- Criação da GUI
+local gui = Instance.new("ScreenGui")
+gui.Name = "ProGui"
+gui.ResetOnSpawn = false
+gui.IgnoreGuiInset = true
+gui.Parent = player:WaitForChild("PlayerGui")
 
-local mainFrame = Instance.new("Frame", screenGui)
-mainFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-mainFrame.BackgroundTransparency = 0.5
-mainFrame.BorderSizePixel = 0
+-- Frame Principal
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, 250, 0, 240)
 mainFrame.Position = UDim2.new(0.05, 0, 0.2, 0)
-mainFrame.Size = UDim2.new(0, 220, 0, 200)
+mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+mainFrame.BackgroundTransparency = 0.3
+mainFrame.BorderSizePixel = 0
 mainFrame.Active = true
 mainFrame.Draggable = true
+mainFrame.Parent = gui
 
-local UICorner = Instance.new("UICorner", mainFrame)
-UICorner.CornerRadius = UDim.new(0, 12)
+local uiCorner = Instance.new("UICorner", mainFrame)
+uiCorner.CornerRadius = UDim.new(0, 12)
 
-local title = Instance.new("TextLabel", mainFrame)
-title.Size = UDim2.new(1, 0, 0, 30)
+-- Título
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, -40, 0, 40)
+title.Position = UDim2.new(0, 10, 0, 0)
 title.BackgroundTransparency = 1
-title.Text = "⚡ HACK MENU ⚡"
+title.Text = "💠 HACK MENU 💠"
 title.TextColor3 = Color3.fromRGB(0, 170, 255)
-title.Font = Enum.Font.Arcade
-title.TextSize = 24
+title.Font = Enum.Font.FredokaOne
+title.TextScaled = true
+title.Parent = mainFrame
 
--- Função de botão
-local function createButton(text, posY, callback)
-	local button = Instance.new("TextButton", mainFrame)
-	button.Size = UDim2.new(0.9, 0, 0, 30)
-	button.Position = UDim2.new(0.05, 0, 0, posY)
-	button.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-	button.TextColor3 = Color3.fromRGB(0, 170, 255)
-	button.Font = Enum.Font.Arcade
-	button.TextSize = 18
-	button.Text = text
-	button.MouseButton1Click:Connect(callback)
-	
-	local corner = Instance.new("UICorner", button)
-	corner.CornerRadius = UDim.new(0, 6)
-	
-	return button
+-- Minimizar botão
+local minimize = Instance.new("TextButton")
+minimize.Size = UDim2.new(0, 30, 0, 30)
+minimize.Position = UDim2.new(1, -35, 0, 5)
+minimize.Text = "_"
+minimize.TextColor3 = Color3.fromRGB(0, 170, 255)
+minimize.Font = Enum.Font.FredokaOne
+minimize.TextSize = 24
+minimize.BackgroundTransparency = 1
+minimize.Parent = mainFrame
+
+-- Função utilitária para criar botões
+local function createButton(name, position, callback)
+	local btn = Instance.new("TextButton")
+	btn.Size = UDim2.new(0.9, 0, 0, 35)
+	btn.Position = UDim2.new(0.05, 0, 0, position)
+	btn.Text = name
+	btn.Font = Enum.Font.FredokaOne
+	btn.TextColor3 = Color3.fromRGB(0, 170, 255)
+	btn.TextScaled = true
+	btn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+	btn.Parent = mainFrame
+
+	local corner = Instance.new("UICorner", btn)
+	corner.CornerRadius = UDim.new(0, 8)
+
+	btn.MouseButton1Click:Connect(callback)
+	return btn
 end
 
--- Botões
-createButton("Roof TP", 40, function()
-	if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-		player.Character.HumanoidRootPart.CFrame = CFrame.new(enemyBaseRoof + Vector3.new(0, 5, 0))
+-- Comandos
+createButton("🚀 Roof TP", 50, function()
+	local char = player.Character
+	if char and char:FindFirstChild("HumanoidRootPart") then
+		char.HumanoidRootPart.CFrame = CFrame.new(ROOF_POSITION + Vector3.new(0, 5, 0))
 	end
 end)
 
-createButton("TP My Base", 80, function()
-	if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-		player.Character.HumanoidRootPart.CFrame = CFrame.new(myBase + Vector3.new(0, 5, 0))
+createButton("🏠 TP My Base", 95, function()
+	local char = player.Character
+	if char and char:FindFirstChild("HumanoidRootPart") then
+		char.HumanoidRootPart.CFrame = CFrame.new(MY_BASE_POSITION + Vector3.new(0, 5, 0))
 	end
 end)
 
-local noClipActive = false
-createButton("No Clip [Toggle]", 120, function()
-	noClipActive = not noClipActive
+-- NoClip
+local noClip = false
+createButton("🚧 Toggle No Clip", 140, function()
+	noClip = not noClip
 end)
 
--- NOCLIP LOOP
-game:GetService("RunService").Stepped:Connect(function()
-	if noClipActive and player.Character and player.Character:FindFirstChild("Humanoid") then
+RunService.Stepped:Connect(function()
+	if noClip and player.Character then
 		for _, part in pairs(player.Character:GetDescendants()) do
-			if part:IsA("BasePart") and part.CanCollide == true then
+			if part:IsA("BasePart") then
 				part.CanCollide = false
 			end
 		end
 	end
 end)
 
--- Botão de minimizar
-local minimized = false
-local minimizeBtn = Instance.new("TextButton", mainFrame)
-minimizeBtn.Size = UDim2.new(0, 30, 0, 30)
-minimizeBtn.Position = UDim2.new(1, -35, 0, 0)
-minimizeBtn.Text = "_"
-minimizeBtn.TextColor3 = Color3.fromRGB(0, 170, 255)
-minimizeBtn.Font = Enum.Font.Arcade
-minimizeBtn.TextSize = 20
-minimizeBtn.BackgroundTransparency = 1
+-- Minimizar lógica
+local isMinimized = false
+local allChildren = {}
 
-minimizeBtn.MouseButton1Click:Connect(function()
-	minimized = not minimized
-	for _, child in pairs(mainFrame:GetChildren()) do
-		if child:IsA("TextButton") or child:IsA("TextLabel") then
-			child.Visible = not minimized
+for _, v in pairs(mainFrame:GetChildren()) do
+	if v:IsA("TextButton") or v:IsA("TextLabel") then
+		if v ~= minimize then
+			table.insert(allChildren, v)
 		end
 	end
-	minimizeBtn.Visible = true
+end
+
+minimize.MouseButton1Click:Connect(function()
+	isMinimized = not isMinimized
+	for _, element in pairs(allChildren) do
+		element.Visible = not isMinimized
+	end
 end)
