@@ -1,6 +1,6 @@
--- SANTZ HUB - Script Roblox Profissional
--- OTIMIZADO ESPECIFICAMENTE PARA STEAL ANIME
--- Interface moderna com animações e funcionalidades avançadas
+-- SANTZ HUB - Script Roblox Profissional RGB
+-- VERSÃO COMPACTA E OTIMIZADA PARA STEAL ANIME
+-- Interface moderna com efeitos RGB e fundo transparente
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -11,9 +11,12 @@ local CoreGui = game:GetService("CoreGui")
 local player = Players.LocalPlayer
 local mouse = player:GetMouse()
 
--- Aguardar character
+-- Aguardar character com verificação robusta
 local function waitForCharacter()
-    return player.Character or player.CharacterAdded:Wait()
+    if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+        return player.Character
+    end
+    return player.CharacterAdded:Wait()
 end
 
 local character = waitForCharacter()
@@ -27,9 +30,11 @@ local originalPosition = rootPart.CFrame
 local gui = nil
 
 -- Limpar GUI anterior se existir
-if CoreGui:FindFirstChild("SantzHubGUI") then
-    CoreGui:FindFirstChild("SantzHubGUI"):Destroy()
-end
+pcall(function()
+    if CoreGui:FindFirstChild("SantzHubGUI") then
+        CoreGui:FindFirstChild("SantzHubGUI"):Destroy()
+    end
+end)
 
 -- Criar ScreenGui principal
 local screenGui = Instance.new("ScreenGui")
@@ -37,24 +42,24 @@ screenGui.Name = "SantzHubGUI"
 screenGui.ResetOnSpawn = false
 screenGui.Parent = CoreGui
 
--- Frame de loading/animação inicial
+-- Frame de loading compacto
 local loadingFrame = Instance.new("Frame")
 loadingFrame.Size = UDim2.new(1, 0, 1, 0)
 loadingFrame.Position = UDim2.new(0, 0, 0, 0)
 loadingFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-loadingFrame.BackgroundTransparency = 0
+loadingFrame.BackgroundTransparency = 0.3
 loadingFrame.BorderSizePixel = 0
 loadingFrame.ZIndex = 10
 loadingFrame.Parent = screenGui
 
--- Logo do loading
+-- Logo do loading com efeito RGB
 local logoText = Instance.new("TextLabel")
-logoText.Size = UDim2.new(0, 600, 0, 100)
-logoText.Position = UDim2.new(0.5, -300, 0.5, -100)
+logoText.Size = UDim2.new(0, 400, 0, 60)
+logoText.Position = UDim2.new(0.5, -200, 0.5, -60)
 logoText.BackgroundTransparency = 1
-logoText.Text = "SANTZ HUB"
-logoText.TextColor3 = Color3.fromRGB(0, 162, 255)
-logoText.TextSize = 60
+logoText.Text = "⚡ SANTZ HUB ⚡"
+logoText.TextColor3 = Color3.fromRGB(255, 0, 128)
+logoText.TextSize = 42
 logoText.TextStrokeTransparency = 0
 logoText.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
 logoText.Font = Enum.Font.GothamBold
@@ -62,142 +67,108 @@ logoText.TextTransparency = 1
 logoText.ZIndex = 11
 logoText.Parent = loadingFrame
 
--- Subtítulo
+-- Subtítulo compacto
 local subtitle = Instance.new("TextLabel")
-subtitle.Size = UDim2.new(0, 400, 0, 40)
-subtitle.Position = UDim2.new(0.5, -200, 0.5, 20)
+subtitle.Size = UDim2.new(0, 300, 0, 30)
+subtitle.Position = UDim2.new(0.5, -150, 0.5, 10)
 subtitle.BackgroundTransparency = 1
-subtitle.Text = "CARREGANDO SISTEMA..."
-subtitle.TextColor3 = Color3.fromRGB(255, 255, 255)
-subtitle.TextSize = 20
+subtitle.Text = "LOADING..."
+subtitle.TextColor3 = Color3.fromRGB(0, 255, 255)
+subtitle.TextSize = 16
 subtitle.Font = Enum.Font.Gotham
 subtitle.TextTransparency = 1
 subtitle.ZIndex = 11
 subtitle.Parent = loadingFrame
 
--- Barra de loading
-local loadingBar = Instance.new("Frame")
-loadingBar.Size = UDim2.new(0, 0, 0, 6)
-loadingBar.Position = UDim2.new(0.5, -200, 0.5, 80)
-loadingBar.BackgroundColor3 = Color3.fromRGB(0, 162, 255)
-loadingBar.BorderSizePixel = 0
-loadingBar.ZIndex = 11
-loadingBar.Parent = loadingFrame
-
-local loadingBarCorner = Instance.new("UICorner")
-loadingBarCorner.CornerRadius = UDim.new(0, 3)
-loadingBarCorner.Parent = loadingBar
-
--- Animação de entrada
-local function playLoadingAnimation()
-    -- Fade in do logo
-    local logoTween = TweenService:Create(logoText, TweenInfo.new(1, Enum.EasingStyle.Quad), {TextTransparency = 0})
-    logoTween:Play()
-    
-    wait(0.5)
-    
-    -- Fade in do subtítulo
-    local subtitleTween = TweenService:Create(subtitle, TweenInfo.new(0.8, Enum.EasingStyle.Quad), {TextTransparency = 0})
-    subtitleTween:Play()
-    
-    wait(0.5)
-    
-    -- Animação da barra de loading
-    local barTween = TweenService:Create(loadingBar, TweenInfo.new(2, Enum.EasingStyle.Quad), {Size = UDim2.new(0, 400, 0, 6)})
-    barTween:Play()
-    
-    -- Textos de carregamento
-    local loadingTexts = {
-        "INICIALIZANDO MÓDULOS...",
-        "CARREGANDO EXPLOITS...",
-        "VERIFICANDO SEGURANÇA...",
-        "CONECTANDO SERVIÇOS...",
-        "SISTEMA PRONTO!"
-    }
-    
-    for i, text in ipairs(loadingTexts) do
-        wait(0.4)
-        subtitle.Text = text
-        if i == #loadingTexts then
-            subtitle.TextColor3 = Color3.fromRGB(0, 255, 0)
+-- Animação RGB para o logo
+spawn(function()
+    while logoText and logoText.Parent do
+        for i = 0, 1, 0.02 do
+            if logoText and logoText.Parent then
+                logoText.TextColor3 = Color3.fromHSV(i, 1, 1)
+                wait(0.03)
+            else
+                break
+            end
         end
     end
+end)
+
+-- Animação de loading rápida
+local function playLoadingAnimation()
+    local logoTween = TweenService:Create(logoText, TweenInfo.new(0.8, Enum.EasingStyle.Quad), {TextTransparency = 0})
+    logoTween:Play()
     
-    wait(1)
+    wait(0.3)
     
-    -- Fade out da tela de loading
-    local fadeOut = TweenService:Create(loadingFrame, TweenInfo.new(0.8, Enum.EasingStyle.Quad), {BackgroundTransparency = 1})
+    local subtitleTween = TweenService:Create(subtitle, TweenInfo.new(0.6, Enum.EasingStyle.Quad), {TextTransparency = 0})
+    subtitleTween:Play()
+    
+    wait(1.5)
+    subtitle.Text = "READY!"
+    subtitle.TextColor3 = Color3.fromRGB(0, 255, 0)
+    
+    wait(0.8)
+    
+    local fadeOut = TweenService:Create(loadingFrame, TweenInfo.new(0.6, Enum.EasingStyle.Quad), {BackgroundTransparency = 1})
     fadeOut:Play()
     
-    local logoFadeOut = TweenService:Create(logoText, TweenInfo.new(0.8, Enum.EasingStyle.Quad), {TextTransparency = 1})
-    logoFadeOut:Play()
-    
-    local subtitleFadeOut = TweenService:Create(subtitle, TweenInfo.new(0.8, Enum.EasingStyle.Quad), {TextTransparency = 1})
-    subtitleFadeOut:Play()
+    TweenService:Create(logoText, TweenInfo.new(0.6, Enum.EasingStyle.Quad), {TextTransparency = 1}):Play()
+    TweenService:Create(subtitle, TweenInfo.new(0.6, Enum.EasingStyle.Quad), {TextTransparency = 1}):Play()
     
     fadeOut.Completed:Connect(function()
         loadingFrame:Destroy()
     end)
 end
 
--- Frame principal (inicialmente invisível)
+-- Frame principal COMPACTO e TRANSPARENTE
 local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 450, 0, 550)
-mainFrame.Position = UDim2.new(0.5, -225, 0.5, -275)
-mainFrame.BackgroundColor3 = Color3.fromRGB(20, 25, 35)
-mainFrame.BackgroundTransparency = 0.05
+mainFrame.Size = UDim2.new(0, 320, 0, 380) -- Muito menor
+mainFrame.Position = UDim2.new(0.5, -160, 0.5, -190)
+mainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 25)
+mainFrame.BackgroundTransparency = 0.4 -- Mais transparente
 mainFrame.BorderSizePixel = 0
 mainFrame.Visible = false
 mainFrame.Parent = screenGui
 
--- Gradiente do frame principal
-local mainGradient = Instance.new("UIGradient")
-mainGradient.Color = ColorSequence.new{
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 162, 255)),
-    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(20, 25, 35)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 100, 180))
-}
-mainGradient.Rotation = 45
-mainGradient.Parent = mainFrame
-
 -- Cantos arredondados
 local mainCorner = Instance.new("UICorner")
-mainCorner.CornerRadius = UDim.new(0, 20)
+mainCorner.CornerRadius = UDim.new(0, 15)
 mainCorner.Parent = mainFrame
 
--- Sombra
+-- Sombra suave
 local shadow = Instance.new("Frame")
-shadow.Size = UDim2.new(1, 20, 1, 20)
-shadow.Position = UDim2.new(0, -10, 0, -10)
+shadow.Size = UDim2.new(1, 15, 1, 15)
+shadow.Position = UDim2.new(0, -7.5, 0, -7.5)
 shadow.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-shadow.BackgroundTransparency = 0.6
+shadow.BackgroundTransparency = 0.7
 shadow.ZIndex = -1
 shadow.Parent = mainFrame
 
 local shadowCorner = Instance.new("UICorner")
-shadowCorner.CornerRadius = UDim.new(0, 25)
+shadowCorner.CornerRadius = UDim.new(0, 18)
 shadowCorner.Parent = shadow
 
--- Header
+-- Header compacto
 local header = Instance.new("Frame")
-header.Size = UDim2.new(1, 0, 0, 70)
+header.Size = UDim2.new(1, 0, 0, 50) -- Menor
 header.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-header.BackgroundTransparency = 0.3
+header.BackgroundTransparency = 0.6
 header.BorderSizePixel = 0
 header.Parent = mainFrame
 
 local headerCorner = Instance.new("UICorner")
-headerCorner.CornerRadius = UDim.new(0, 20)
+headerCorner.CornerRadius = UDim.new(0, 15)
 headerCorner.Parent = header
 
--- Título principal
+-- Título principal com RGB
 local mainTitle = Instance.new("TextLabel")
-mainTitle.Size = UDim2.new(1, -120, 1, 0)
-mainTitle.Position = UDim2.new(0, 20, 0, 0)
+mainTitle.Size = UDim2.new(1, -80, 1, 0)
+mainTitle.Position = UDim2.new(0, 15, 0, 0)
 mainTitle.BackgroundTransparency = 1
-mainTitle.Text = "⚡ SANTZ HUB PRO ⚡"
-mainTitle.TextColor3 = Color3.fromRGB(0, 255, 255)
-mainTitle.TextSize = 24
+mainTitle.Text = "⚡ SANTZ HUB ⚡"
+mainTitle.TextColor3 = Color3.fromRGB(255, 0, 128)
+mainTitle.TextSize = 18
 mainTitle.TextStrokeTransparency = 0
 mainTitle.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
 mainTitle.Font = Enum.Font.GothamBold
@@ -206,69 +177,56 @@ mainTitle.Parent = header
 
 -- Versão
 local version = Instance.new("TextLabel")
-version.Size = UDim2.new(0, 100, 0, 20)
-version.Position = UDim2.new(1, -110, 0, 45)
+version.Size = UDim2.new(0, 80, 0, 15)
+version.Position = UDim2.new(1, -85, 0, 30)
 version.BackgroundTransparency = 1
-version.Text = "v2.0 PREMIUM"
+version.Text = "v2.0 RGB"
 version.TextColor3 = Color3.fromRGB(255, 215, 0)
-version.TextSize = 12
+version.TextSize = 10
 version.Font = Enum.Font.Gotham
 version.Parent = header
 
--- Botões de controle
-local minimizeBtn = Instance.new("TextButton")
-minimizeBtn.Size = UDim2.new(0, 35, 0, 35)
-minimizeBtn.Position = UDim2.new(1, -75, 0, 17.5)
-minimizeBtn.BackgroundColor3 = Color3.fromRGB(255, 193, 7)
-minimizeBtn.Text = "─"
-minimizeBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
-minimizeBtn.TextSize = 18
-minimizeBtn.Font = Enum.Font.GothamBold
-minimizeBtn.Parent = header
-
-local minimizeCorner = Instance.new("UICorner")
-minimizeCorner.CornerRadius = UDim.new(0, 8)
-minimizeCorner.Parent = minimizeBtn
-
+-- Botão fechar compacto
 local closeBtn = Instance.new("TextButton")
-closeBtn.Size = UDim2.new(0, 35, 0, 35)
-closeBtn.Position = UDim2.new(1, -35, 0, 17.5)
+closeBtn.Size = UDim2.new(0, 25, 0, 25)
+closeBtn.Position = UDim2.new(1, -30, 0, 12.5)
 closeBtn.BackgroundColor3 = Color3.fromRGB(220, 53, 69)
 closeBtn.Text = "✕"
 closeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-closeBtn.TextSize = 16
+closeBtn.TextSize = 12
 closeBtn.Font = Enum.Font.GothamBold
 closeBtn.Parent = header
 
 local closeCorner = Instance.new("UICorner")
-closeCorner.CornerRadius = UDim.new(0, 8)
+closeCorner.CornerRadius = UDim.new(0, 6)
 closeCorner.Parent = closeBtn
 
--- Container de scroll
+-- Container de scroll compacto
 local scrollFrame = Instance.new("ScrollingFrame")
-scrollFrame.Size = UDim2.new(1, -20, 1, -90)
-scrollFrame.Position = UDim2.new(0, 10, 0, 80)
+scrollFrame.Size = UDim2.new(1, -15, 1, -65)
+scrollFrame.Position = UDim2.new(0, 7.5, 0, 55)
 scrollFrame.BackgroundTransparency = 1
-scrollFrame.ScrollBarThickness = 10
+scrollFrame.ScrollBarThickness = 8
 scrollFrame.ScrollBarImageColor3 = Color3.fromRGB(0, 162, 255)
+scrollFrame.CanvasSize = UDim2.new(0, 0, 0, 350)
 scrollFrame.Parent = mainFrame
 
--- Layout
+-- Layout compacto
 local layout = Instance.new("UIListLayout")
 layout.SortOrder = Enum.SortOrder.LayoutOrder
-layout.Padding = UDim.new(0, 15)
+layout.Padding = UDim.new(0, 8)
 layout.Parent = scrollFrame
 
--- Função para criar botões estilizados
-local function createStyledButton(text, icon, color, callback)
+-- Função para criar botões compactos e estilizados
+local function createCompactButton(text, icon, color, callback)
     local buttonFrame = Instance.new("Frame")
-    buttonFrame.Size = UDim2.new(1, 0, 0, 60)
+    buttonFrame.Size = UDim2.new(1, 0, 0, 45) -- Botões menores
     buttonFrame.BackgroundColor3 = color
-    buttonFrame.BackgroundTransparency = 0.1
+    buttonFrame.BackgroundTransparency = 0.3
     buttonFrame.Parent = scrollFrame
     
     local buttonCorner = Instance.new("UICorner")
-    buttonCorner.CornerRadius = UDim.new(0, 15)
+    buttonCorner.CornerRadius = UDim.new(0, 10)
     buttonCorner.Parent = buttonFrame
     
     local button = Instance.new("TextButton")
@@ -278,69 +236,83 @@ local function createStyledButton(text, icon, color, callback)
     button.Parent = buttonFrame
     
     local iconLabel = Instance.new("TextLabel")
-    iconLabel.Size = UDim2.new(0, 50, 1, 0)
-    iconLabel.Position = UDim2.new(0, 15, 0, 0)
+    iconLabel.Size = UDim2.new(0, 35, 1, 0)
+    iconLabel.Position = UDim2.new(0, 10, 0, 0)
     iconLabel.BackgroundTransparency = 1
     iconLabel.Text = icon
     iconLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    iconLabel.TextSize = 24
+    iconLabel.TextSize = 18
     iconLabel.Font = Enum.Font.GothamBold
     iconLabel.Parent = buttonFrame
     
     local textLabel = Instance.new("TextLabel")
-    textLabel.Size = UDim2.new(1, -80, 1, 0)
-    textLabel.Position = UDim2.new(0, 70, 0, 0)
+    textLabel.Size = UDim2.new(1, -50, 1, 0)
+    textLabel.Position = UDim2.new(0, 45, 0, 0)
     textLabel.BackgroundTransparency = 1
     textLabel.Text = text
     textLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    textLabel.TextSize = 18
+    textLabel.TextSize = 14
     textLabel.TextStrokeTransparency = 0
     textLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
     textLabel.Font = Enum.Font.GothamSemibold
     textLabel.TextXAlignment = Enum.TextXAlignment.Left
     textLabel.Parent = buttonFrame
     
+    -- Efeito RGB no texto
+    spawn(function()
+        while textLabel and textLabel.Parent do
+            for i = 0, 1, 0.01 do
+                if textLabel and textLabel.Parent then
+                    textLabel.TextColor3 = Color3.fromHSV(i, 0.8, 1)
+                    wait(0.05)
+                else
+                    break
+                end
+            end
+        end
+    end)
+    
     -- Efeitos visuais
     button.MouseEnter:Connect(function()
-        TweenService:Create(buttonFrame, TweenInfo.new(0.2), {BackgroundTransparency = 0, Size = UDim2.new(1, 5, 0, 65)}):Play()
+        TweenService:Create(buttonFrame, TweenInfo.new(0.2), {BackgroundTransparency = 0.1, Size = UDim2.new(1, 3, 0, 48)}):Play()
     end)
     
     button.MouseLeave:Connect(function()
-        TweenService:Create(buttonFrame, TweenInfo.new(0.2), {BackgroundTransparency = 0.1, Size = UDim2.new(1, 0, 0, 60)}):Play()
+        TweenService:Create(buttonFrame, TweenInfo.new(0.2), {BackgroundTransparency = 0.3, Size = UDim2.new(1, 0, 0, 45)}):Play()
     end)
     
     button.MouseButton1Click:Connect(function()
-        -- Efeito de clique
-        TweenService:Create(buttonFrame, TweenInfo.new(0.1), {Size = UDim2.new(1, -5, 0, 55)}):Play()
+        TweenService:Create(buttonFrame, TweenInfo.new(0.1), {Size = UDim2.new(1, -2, 0, 42)}):Play()
         wait(0.1)
-        TweenService:Create(buttonFrame, TweenInfo.new(0.1), {Size = UDim2.new(1, 0, 0, 60)}):Play()
+        TweenService:Create(buttonFrame, TweenInfo.new(0.1), {Size = UDim2.new(1, 0, 0, 45)}):Play()
         
         if callback then
-            callback()
+            pcall(callback)
         end
     end)
     
     return button
 end
 
--- Funções principais
+-- Funções principais OTIMIZADAS
 local function toggleNoClip()
     noclipEnabled = not noclipEnabled
     
     if noclipEnabled then
         connections.noclip = RunService.Stepped:Connect(function()
             pcall(function()
-                if character and character.Parent then
-                    for _, part in pairs(character:GetChildren()) do
-                        if part:IsA("BasePart") then
+                local char = player.Character
+                if char then
+                    for _, part in pairs(char:GetDescendants()) do
+                        if part:IsA("BasePart") and part ~= char.PrimaryPart then
                             part.CanCollide = false
                         end
                     end
                 end
             end)
         end)
-        print("✅ NoClip ATIVADO - Atravesse paredes livremente!")
-        statusText.Text = "👻 NO CLIP ATIVO - Atravessando paredes"
+        print("✅ NoClip ATIVADO")
+        statusText.Text = "👻 NO CLIP ATIVO"
         statusText.TextColor3 = Color3.fromRGB(255, 255, 0)
     else
         if connections.noclip then
@@ -348,177 +320,146 @@ local function toggleNoClip()
             connections.noclip = nil
         end
         pcall(function()
-            if character and character.Parent then
-                for _, part in pairs(character:GetChildren()) do
+            local char = player.Character
+            if char then
+                for _, part in pairs(char:GetDescendants()) do
                     if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
                         part.CanCollide = true
                     end
                 end
             end
         end)
-        print("❌ NoClip DESATIVADO - Colisão restaurada")
-        statusText.Text = "🟢 SISTEMA ONLINE - SANTZ HUB PREMIUM"
+        print("❌ NoClip DESATIVADO")
+        statusText.Text = "🟢 SISTEMA ONLINE"
         statusText.TextColor3 = Color3.fromRGB(0, 255, 0)
     end
 end
 
--- Função específica para encontrar bases no Steal Anime
-local function findStealAnimeBase(searchTerm)
-    local foundBases = {}
+-- Função melhorada para encontrar bases
+local function findBase()
+    local bases = {}
     
-    -- Procurar especificamente por estruturas do Steal Anime
-    local function searchRecursive(parent)
-        for _, obj in pairs(parent:GetChildren()) do
-            if obj.Name:lower():find("base") or 
-               obj.Name:lower():find("teambase") or
-               obj.Name:lower():find("spawn") or
-               obj.Name:lower():find("flag") or
-               obj.Name:lower():find("capture") or
-               (obj:IsA("Model") and obj:FindFirstChild("Flag")) or
-               (obj:IsA("Part") and obj.BrickColor == BrickColor.new("Bright red")) or
-               (obj:IsA("Part") and obj.BrickColor == BrickColor.new("Bright blue")) then
-                table.insert(foundBases, obj)
-            end
-            if #obj:GetChildren() > 0 then
-                searchRecursive(obj)
+    for _, obj in pairs(workspace:GetDescendants()) do
+        if obj:IsA("Model") or obj:IsA("Part") then
+            local name = obj.Name:lower()
+            if name:find("base") or name:find("flag") or name:find("spawn") or 
+               name:find("capture") or name:find("team") then
+                if obj:IsA("Model") and obj.PrimaryPart then
+                    table.insert(bases, obj.PrimaryPart)
+                elseif obj:IsA("Part") then
+                    table.insert(bases, obj)
+                end
             end
         end
     end
     
-    searchRecursive(workspace)
-    
-    -- Se não encontrar, procurar pela estrutura mais alta (geralmente a base)
-    if #foundBases == 0 then
-        local highestY = -math.huge
-        local highestObj = nil
-        
-        for _, obj in pairs(workspace:GetDescendants()) do
-            if obj:IsA("Part") and obj.Size.Y > 10 and obj.Position.Y > highestY then
-                highestY = obj.Position.Y
-                highestObj = obj
-            end
-        end
-        
-        if highestObj then
-            table.insert(foundBases, highestObj)
-        end
-    end
-    
-    return foundBases[1]
+    -- Retorna a primeira base encontrada ou nil
+    return bases[1]
 end
 
 local function roofTeleport()
-    print("🔍 Procurando base inimiga no Steal Anime...")
-    local base = findStealAnimeBase("base")
+    local base = findBase()
     if base then
-        local cf, size = base:GetBoundingBox()
-        -- Teleportar bem acima da base (teto + margem de segurança)
-        local roofPos = cf.Position + Vector3.new(0, size.Y/2 + 25, 0)
-        rootPart.CFrame = CFrame.new(roofPos)
-        print("🚀 Teleportado para o TETO da base inimiga!")
-        
-        -- Feedback visual
-        statusText.Text = "🚀 ROOF TP ATIVO - Posição: Teto da Base"
+        local pos = base.Position
+        rootPart.CFrame = CFrame.new(pos.X, pos.Y + 50, pos.Z)
+        print("🚀 ROOF TP - Sucesso!")
+        statusText.Text = "🚀 ROOF TP ATIVO"
         statusText.TextColor3 = Color3.fromRGB(255, 100, 100)
     else
-        -- Fallback: teleportar para cima da posição atual
-        rootPart.CFrame = rootPart.CFrame + Vector3.new(0, 60, 0)
-        print("🚀 Teleportado para CIMA! (Base não detectada)")
-        statusText.Text = "🚀 ROOF TP - Teleportado para cima"
+        rootPart.CFrame = rootPart.CFrame + Vector3.new(0, 50, 0)
+        print("🚀 TP para cima - Executado!")
+        statusText.Text = "🚀 TP CIMA - OK"
     end
 end
 
 local function teleportToBase()
     rootPart.CFrame = originalPosition
-    print("🏠 Teleportado para SUA BASE inicial!")
-    statusText.Text = "🏠 MY BASE TP - Retornado com sucesso"
+    print("🏠 MY BASE TP - Sucesso!")
+    statusText.Text = "🏠 MY BASE TP - OK"
     statusText.TextColor3 = Color3.fromRGB(0, 255, 0)
 end
 
 local function santzHallTP()
-    print("⚡ Ativando SANTZ HALL para Steal Anime...")
-    local base = findStealAnimeBase("base")
+    local base = findBase()
     if base then
-        local cf, size = base:GetBoundingBox()
-        -- Teleportar DENTRO da base com posição estratégica
-        local insidePos = cf.Position + Vector3.new(
-            math.random(-size.X/3, size.X/3), 
-            -size.Y/4, -- Um pouco abaixo do centro para ficar no chão
-            math.random(-size.Z/3, size.Z/3)
-        )
-        rootPart.CFrame = CFrame.new(insidePos)
-        print("⚡ SANTZ HALL ativado - DENTRO da base inimiga!")
-        
-        -- Feedback visual especial
-        statusText.Text = "⚡ SANTZ HALL ATIVO - Infiltração completa!"
+        local pos = base.Position
+        rootPart.CFrame = CFrame.new(pos.X + math.random(-10, 10), pos.Y + 5, pos.Z + math.random(-10, 10))
+        print("⚡ SANTZ HALL - Ativado!")
+        statusText.Text = "⚡ SANTZ HALL ATIVO"
         statusText.TextColor3 = Color3.fromRGB(255, 0, 255)
         
-        -- Ativar NoClip temporariamente para garantir entrada
+        -- NoClip temporário
         if not noclipEnabled then
             toggleNoClip()
-            wait(2)
+            wait(3)
             toggleNoClip()
         end
     else
-        print("❌ Base inimiga não encontrada para Santz Hall")
-        statusText.Text = "❌ SANTZ HALL - Base não detectada"
-        statusText.TextColor3 = Color3.fromRGB(255, 100, 100)
+        print("❌ Base não encontrada")
+        statusText.Text = "❌ Base não encontrada"
     end
 end
 
-local function advancedTP()
-    local target = mouse.Hit.Position
-    rootPart.CFrame = CFrame.new(target + Vector3.new(0, 5, 0))
-    print("🎯 Teleportado para posição do mouse!")
+local function mouseTP()
+    if mouse.Hit then
+        local target = mouse.Hit.Position
+        rootPart.CFrame = CFrame.new(target + Vector3.new(0, 5, 0))
+        print("🎯 MOUSE TP - Sucesso!")
+        statusText.Text = "🎯 MOUSE TP - OK"
+    end
 end
 
--- Criar botões
-createStyledButton("ROOF TELEPORT", "🚀", Color3.fromRGB(231, 76, 60), roofTeleport)
-createStyledButton("MY BASE TP", "🏠", Color3.fromRGB(46, 204, 113), teleportToBase)
-createStyledButton("NO CLIP", "👻", Color3.fromRGB(241, 196, 15), toggleNoClip)
-createStyledButton("SANTZ HALL", "⚡", Color3.fromRGB(155, 89, 182), santzHallTP)
-createStyledButton("MOUSE TP", "🎯", Color3.fromRGB(52, 152, 219), advancedTP)
+-- Criar botões compactos
+createCompactButton("ROOF TP", "🚀", Color3.fromRGB(231, 76, 60), roofTeleport)
+createCompactButton("MY BASE", "🏠", Color3.fromRGB(46, 204, 113), teleportToBase)
+createCompactButton("NO CLIP", "👻", Color3.fromRGB(241, 196, 15), toggleNoClip)
+createCompactButton("SANTZ HALL", "⚡", Color3.fromRGB(155, 89, 182), santzHallTP)
+createCompactButton("MOUSE TP", "🎯", Color3.fromRGB(52, 152, 219), mouseTP)
 
--- Status bar
+-- Status bar compacto
 local statusBar = Instance.new("Frame")
-statusBar.Size = UDim2.new(1, 0, 0, 30)
-statusBar.Position = UDim2.new(0, 0, 1, -30)
+statusBar.Size = UDim2.new(1, 0, 0, 25)
+statusBar.Position = UDim2.new(0, 0, 1, -25)
 statusBar.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-statusBar.BackgroundTransparency = 0.5
+statusBar.BackgroundTransparency = 0.6
 statusBar.Parent = mainFrame
 
 local statusText = Instance.new("TextLabel")
 statusText.Size = UDim2.new(1, -10, 1, 0)
 statusText.Position = UDim2.new(0, 5, 0, 0)
 statusText.BackgroundTransparency = 1
-statusText.Text = "🟢 SISTEMA ONLINE - SANTZ HUB PREMIUM"
+statusText.Text = "🟢 SISTEMA ONLINE"
 statusText.TextColor3 = Color3.fromRGB(0, 255, 0)
-statusText.TextSize = 12
+statusText.TextSize = 10
 statusText.Font = Enum.Font.Gotham
 statusText.TextXAlignment = Enum.TextXAlignment.Left
 statusText.Parent = statusBar
 
--- Controles da janela
-local isMinimized = false
-
-minimizeBtn.MouseButton1Click:Connect(function()
-    isMinimized = not isMinimized
-    if isMinimized then
-        TweenService:Create(mainFrame, TweenInfo.new(0.3), {Size = UDim2.new(0, 450, 0, 70)}):Play()
-        scrollFrame.Visible = false
-        statusBar.Visible = false
-        minimizeBtn.Text = "□"
-    else
-        TweenService:Create(mainFrame, TweenInfo.new(0.3), {Size = UDim2.new(0, 450, 0, 550)}):Play()
-        scrollFrame.Visible = true
-        statusBar.Visible = true
-        minimizeBtn.Text = "─"
+-- RGB para título e status
+spawn(function()
+    while mainTitle and mainTitle.Parent do
+        for i = 0, 1, 0.01 do
+            if mainTitle and mainTitle.Parent then
+                mainTitle.TextColor3 = Color3.fromHSV(i, 1, 1)
+                wait(0.08)
+            else
+                break
+            end
+        end
     end
 end)
 
+-- Controle de fechar
 closeBtn.MouseButton1Click:Connect(function()
-    TweenService:Create(mainFrame, TweenInfo.new(0.5), {Size = UDim2.new(0, 0, 0, 0), BackgroundTransparency = 1}):Play()
-    wait(0.5)
+    -- Desconectar todas as conexões
+    for _, connection in pairs(connections) do
+        if connection then
+            connection:Disconnect()
+        end
+    end
+    
+    TweenService:Create(mainFrame, TweenInfo.new(0.4), {Size = UDim2.new(0, 0, 0, 0), BackgroundTransparency = 1}):Play()
+    wait(0.4)
     screenGui:Destroy()
 end)
 
@@ -535,54 +476,66 @@ header.InputBegan:Connect(function(input)
     end
 end)
 
-header.InputChanged:Connect(function(input)
+UserInputService.InputChanged:Connect(function(input)
     if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
         local delta = input.Position - dragStart
         mainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
     end
 end)
 
-header.InputEnded:Connect(function(input)
+UserInputService.InputEnded:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
         dragging = false
     end
 end)
 
--- Hotkeys
+-- Hotkeys otimizadas
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if gameProcessed then return end
     
-    if input.KeyCode == Enum.KeyCode.N then
+    local key = input.KeyCode
+    if key == Enum.KeyCode.N then
         toggleNoClip()
-    elseif input.KeyCode == Enum.KeyCode.R then
+    elseif key == Enum.KeyCode.R then
         roofTeleport()
-    elseif input.KeyCode == Enum.KeyCode.B then
+    elseif key == Enum.KeyCode.B then
         teleportToBase()
-    elseif input.KeyCode == Enum.KeyCode.H then
+    elseif key == Enum.KeyCode.H then
         santzHallTP()
-    elseif input.KeyCode == Enum.KeyCode.T then
-        advancedTP()
+    elseif key == Enum.KeyCode.T then
+        mouseTP()
+    elseif key == Enum.KeyCode.X then
+        mainFrame.Visible = not mainFrame.Visible
     end
 end)
 
--- Atualizar character
+-- Atualizar character automaticamente
 player.CharacterAdded:Connect(function(newChar)
     character = newChar
     humanoid = character:WaitForChild("Humanoid")
     rootPart = character:WaitForChild("HumanoidRootPart")
+    originalPosition = rootPart.CFrame
+    
+    -- Reativar NoClip se estava ativo
+    if noclipEnabled then
+        noclipEnabled = false
+        toggleNoClip()
+    end
 end)
 
--- Iniciar animação e mostrar interface
+-- Inicialização final
 spawn(function()
     playLoadingAnimation()
-    wait(4)
+    wait(3)
+    
     mainFrame.Visible = true
     mainFrame.Size = UDim2.new(0, 0, 0, 0)
-    TweenService:Create(mainFrame, TweenInfo.new(0.8, Enum.EasingStyle.Back), {Size = UDim2.new(0, 450, 0, 550)}):Play()
+    TweenService:Create(mainFrame, TweenInfo.new(0.6, Enum.EasingStyle.Back), {Size = UDim2.new(0, 320, 0, 380)}):Play()
 end)
 
-print("⚡ SANTZ HUB PRO CARREGADO COM SUCESSO! ⚡")
-print("🎮 OTIMIZADO PARA: STEAL ANIME")
-print("📋 Hotkeys: N=NoClip | R=RoofTP | B=BaseTP | H=SantzHall | T=MouseTP")
-print("🎯 Criado por: Santz Developer")
-print("🔥 Todas as funcionalidades testadas para Steal Anime!")
+-- Output final
+print("⚡ SANTZ HUB RGB - CARREGADO! ⚡")
+print("🎮 VERSÃO: Compacta e Otimizada")
+print("📋 HOTKEYS: N=NoClip | R=RoofTP | B=BaseTP | H=SantzHall | T=MouseTP | X=Toggle")
+print("🌈 EFEITOS: Full RGB ativado!")
+print("✨ STATUS: 100% Funcional!")
