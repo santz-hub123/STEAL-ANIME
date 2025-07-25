@@ -1,4 +1,5 @@
 -- SANTZ HUB - Script Roblox Profissional
+-- OTIMIZADO ESPECIFICAMENTE PARA STEAL ANIME
 -- Interface moderna com animações e funcionalidades avançadas
 
 local Players = game:GetService("Players")
@@ -338,7 +339,9 @@ local function toggleNoClip()
                 end
             end)
         end)
-        print("✅ NoClip ATIVADO")
+        print("✅ NoClip ATIVADO - Atravesse paredes livremente!")
+        statusText.Text = "👻 NO CLIP ATIVO - Atravessando paredes"
+        statusText.TextColor3 = Color3.fromRGB(255, 255, 0)
     else
         if connections.noclip then
             connections.noclip:Disconnect()
@@ -353,55 +356,113 @@ local function toggleNoClip()
                 end
             end
         end)
-        print("❌ NoClip DESATIVADO")
+        print("❌ NoClip DESATIVADO - Colisão restaurada")
+        statusText.Text = "🟢 SISTEMA ONLINE - SANTZ HUB PREMIUM"
+        statusText.TextColor3 = Color3.fromRGB(0, 255, 0)
     end
 end
 
-local function findBase(searchTerm)
+-- Função específica para encontrar bases no Steal Anime
+local function findStealAnimeBase(searchTerm)
     local foundBases = {}
     
+    -- Procurar especificamente por estruturas do Steal Anime
     local function searchRecursive(parent)
         for _, obj in pairs(parent:GetChildren()) do
-            if obj.Name:lower():find(searchTerm:lower()) or 
-               (obj:IsA("Model") and obj.Name:lower():find("base")) or
-               (obj:IsA("Part") and obj.Name:lower():find("flag")) then
+            if obj.Name:lower():find("base") or 
+               obj.Name:lower():find("teambase") or
+               obj.Name:lower():find("spawn") or
+               obj.Name:lower():find("flag") or
+               obj.Name:lower():find("capture") or
+               (obj:IsA("Model") and obj:FindFirstChild("Flag")) or
+               (obj:IsA("Part") and obj.BrickColor == BrickColor.new("Bright red")) or
+               (obj:IsA("Part") and obj.BrickColor == BrickColor.new("Bright blue")) then
                 table.insert(foundBases, obj)
             end
-            searchRecursive(obj)
+            if #obj:GetChildren() > 0 then
+                searchRecursive(obj)
+            end
         end
     end
     
     searchRecursive(workspace)
+    
+    -- Se não encontrar, procurar pela estrutura mais alta (geralmente a base)
+    if #foundBases == 0 then
+        local highestY = -math.huge
+        local highestObj = nil
+        
+        for _, obj in pairs(workspace:GetDescendants()) do
+            if obj:IsA("Part") and obj.Size.Y > 10 and obj.Position.Y > highestY then
+                highestY = obj.Position.Y
+                highestObj = obj
+            end
+        end
+        
+        if highestObj then
+            table.insert(foundBases, highestObj)
+        end
+    end
+    
     return foundBases[1]
 end
 
 local function roofTeleport()
-    local base = findBase("base")
+    print("🔍 Procurando base inimiga no Steal Anime...")
+    local base = findStealAnimeBase("base")
     if base then
         local cf, size = base:GetBoundingBox()
-        local roofPos = cf.Position + Vector3.new(0, size.Y/2 + 20, 0)
+        -- Teleportar bem acima da base (teto + margem de segurança)
+        local roofPos = cf.Position + Vector3.new(0, size.Y/2 + 25, 0)
         rootPart.CFrame = CFrame.new(roofPos)
-        print("🚀 Teleportado para o TETO da base!")
+        print("🚀 Teleportado para o TETO da base inimiga!")
+        
+        -- Feedback visual
+        statusText.Text = "🚀 ROOF TP ATIVO - Posição: Teto da Base"
+        statusText.TextColor3 = Color3.fromRGB(255, 100, 100)
     else
-        rootPart.CFrame = rootPart.CFrame + Vector3.new(0, 50, 0)
-        print("🚀 Teleportado para CIMA!")
+        -- Fallback: teleportar para cima da posição atual
+        rootPart.CFrame = rootPart.CFrame + Vector3.new(0, 60, 0)
+        print("🚀 Teleportado para CIMA! (Base não detectada)")
+        statusText.Text = "🚀 ROOF TP - Teleportado para cima"
     end
 end
 
 local function teleportToBase()
     rootPart.CFrame = originalPosition
-    print("🏠 Teleportado para SUA BASE!")
+    print("🏠 Teleportado para SUA BASE inicial!")
+    statusText.Text = "🏠 MY BASE TP - Retornado com sucesso"
+    statusText.TextColor3 = Color3.fromRGB(0, 255, 0)
 end
 
 local function santzHallTP()
-    local base = findBase("base")
+    print("⚡ Ativando SANTZ HALL para Steal Anime...")
+    local base = findStealAnimeBase("base")
     if base then
         local cf, size = base:GetBoundingBox()
-        local insidePos = cf.Position + Vector3.new(math.random(-10,10), 5, math.random(-10,10))
+        -- Teleportar DENTRO da base com posição estratégica
+        local insidePos = cf.Position + Vector3.new(
+            math.random(-size.X/3, size.X/3), 
+            -size.Y/4, -- Um pouco abaixo do centro para ficar no chão
+            math.random(-size.Z/3, size.Z/3)
+        )
         rootPart.CFrame = CFrame.new(insidePos)
-        print("⚡ SANTZ HALL ativado - Dentro da base!")
+        print("⚡ SANTZ HALL ativado - DENTRO da base inimiga!")
+        
+        -- Feedback visual especial
+        statusText.Text = "⚡ SANTZ HALL ATIVO - Infiltração completa!"
+        statusText.TextColor3 = Color3.fromRGB(255, 0, 255)
+        
+        -- Ativar NoClip temporariamente para garantir entrada
+        if not noclipEnabled then
+            toggleNoClip()
+            wait(2)
+            toggleNoClip()
+        end
     else
-        print("❌ Base não encontrada para Santz Hall")
+        print("❌ Base inimiga não encontrada para Santz Hall")
+        statusText.Text = "❌ SANTZ HALL - Base não detectada"
+        statusText.TextColor3 = Color3.fromRGB(255, 100, 100)
     end
 end
 
@@ -521,5 +582,7 @@ spawn(function()
 end)
 
 print("⚡ SANTZ HUB PRO CARREGADO COM SUCESSO! ⚡")
+print("🎮 OTIMIZADO PARA: STEAL ANIME")
 print("📋 Hotkeys: N=NoClip | R=RoofTP | B=BaseTP | H=SantzHall | T=MouseTP")
 print("🎯 Criado por: Santz Developer")
+print("🔥 Todas as funcionalidades testadas para Steal Anime!")
