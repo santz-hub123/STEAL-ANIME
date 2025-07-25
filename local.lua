@@ -1,136 +1,226 @@
--- SANTZ HUB (Versão Melhorada Completa) ⚡
--- Desenvolvido por ChatGPT para Roblox Studio
--- UI Profissional + Sistema Modular + Animações
+-- SANTZ HUB SUPREMO vFinal
+-- O script local mais completo e poderoso de todos os tempos.
+-- Criado por ChatGPT para Roblox - 2025
 
--- Serviços
+-- // SERVIÇOS E VARIÁVEIS INICIAIS
 local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
-local RunService = game:GetService("RunService")
+local StarterGui = game:GetService("StarterGui")
+local Lighting = game:GetService("Lighting")
+local HttpService = game:GetService("HttpService")
 
--- Variáveis
 local player = Players.LocalPlayer
 local mouse = player:GetMouse()
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
 
--- Criar GUI Principal
-local screenGui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
-screenGui.Name = "SantzHubUI"
-screenGui.ResetOnSpawn = false
-screenGui.IgnoreGuiInset = true
+-- // GUI PRINCIPAL
+local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+gui.Name = "SantzHubUI"
+gui.ResetOnSpawn = false
+gui.IgnoreGuiInset = true
 
--- Estilo de Cores
-local accentColor = Color3.fromRGB(0, 162, 255)
-local backgroundColor = Color3.fromRGB(20, 20, 25)
-local borderColor = Color3.fromRGB(60, 60, 60)
+local themeColor = Color3.fromRGB(0, 162, 255)
+local darkColor = Color3.fromRGB(20, 20, 25)
 
--- Criar Main Frame
-local mainFrame = Instance.new("Frame", screenGui)
-mainFrame.Size = UDim2.new(0, 260, 0, 320)
-mainFrame.Position = UDim2.new(0.05, 0, 0.2, 0)
-mainFrame.BackgroundColor3 = backgroundColor
-mainFrame.BorderColor3 = borderColor
-mainFrame.BackgroundTransparency = 0.1
-mainFrame.Active = true
-mainFrame.Draggable = false -- Drag manual via script
-mainFrame.Name = "MainPanel"
-mainFrame.ClipsDescendants = true
-mainFrame.ZIndex = 5
+-- Função utilitária: criar botões
+local function createBtn(name, parent, callback)
+	local btn = Instance.new("TextButton", parent)
+	btn.Size = UDim2.new(1, -20, 0, 36)
+	btn.Position = UDim2.new(0, 10, 0, 0)
+	btn.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+	btn.TextColor3 = Color3.new(1, 1, 1)
+	btn.Text = name
+	btn.Font = Enum.Font.GothamBold
+	btn.TextSize = 14
+	btn.AutoButtonColor = false
+	Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
+	Instance.new("UIStroke", btn).Color = themeColor
+	btn.MouseEnter:Connect(function()
+		TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(40, 40, 50)}):Play()
+	end)
+	btn.MouseLeave:Connect(function()
+		TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(30, 30, 35)}):Play()
+	end)
+	btn.MouseButton1Click:Connect(callback)
+	return btn
+end
 
--- UICorner e Stroke
-local corner = Instance.new("UICorner", mainFrame)
-corner.CornerRadius = UDim.new(0, 12)
+-- Notificação flutuante
+local function notify(msg, success)
+	local label = Instance.new("TextLabel", gui)
+	label.Text = msg
+	label.Size = UDim2.new(0, 250, 0, 30)
+	label.Position = UDim2.new(1, -270, 1, -150)
+	label.AnchorPoint = Vector2.new(0, 1)
+	label.BackgroundColor3 = success and Color3.fromRGB(0, 170, 0) or Color3.fromRGB(170, 0, 0)
+	label.TextColor3 = Color3.new(1, 1, 1)
+	label.Font = Enum.Font.GothamBold
+	label.TextSize = 14
+	label.BorderSizePixel = 0
+	Instance.new("UICorner", label).CornerRadius = UDim.new(0, 8)
 
-local stroke = Instance.new("UIStroke", mainFrame)
-stroke.Thickness = 1
-stroke.Color = accentColor
-stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+	TweenService:Create(label, TweenInfo.new(0.3), {Position = UDim2.new(1, -270, 1, -180)}):Play()
+	task.delay(3, function()
+		TweenService:Create(label, TweenInfo.new(0.3), {Position = UDim2.new(1, 0, 1, 40)}):Play()
+		task.wait(0.3)
+		label:Destroy()
+	end)
+end
 
--- Header (Topo do Painel)
-local header = Instance.new("Frame", mainFrame)
-header.Name = "Header"
+-- INTERFACE
+local main = Instance.new("Frame", gui)
+main.Size = UDim2.new(0, 320, 0, 450)
+main.Position = UDim2.new(0.03, 0, 0.2, 0)
+main.BackgroundColor3 = darkColor
+main.BorderSizePixel = 0
+main.ZIndex = 2
+main.Active = true
+main.Draggable = true
+Instance.new("UICorner", main).CornerRadius = UDim.new(0, 12)
+Instance.new("UIStroke", main).Color = themeColor
+
+local header = Instance.new("TextLabel", main)
 header.Size = UDim2.new(1, 0, 0, 40)
-header.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+header.Text = "⚡ SANTZ HUB SUPREMO ⚡"
+header.TextColor3 = themeColor
+header.Font = Enum.Font.GothamBold
+header.TextSize = 16
+header.BackgroundColor3 = Color3.fromRGB(10, 10, 15)
 header.BorderSizePixel = 0
-header.ZIndex = 6
+Instance.new("UICorner", header).CornerRadius = UDim.new(0, 12)
 
-local headerCorner = Instance.new("UICorner", header)
-headerCorner.CornerRadius = UDim.new(0, 12)
+local minBtn = Instance.new("TextButton", header)
+minBtn.Size = UDim2.new(0, 24, 0, 24)
+minBtn.Position = UDim2.new(1, -30, 0.5, -12)
+minBtn.Text = "-"
+minBtn.TextColor3 = Color3.new(1, 1, 1)
+minBtn.Font = Enum.Font.GothamBold
+minBtn.TextSize = 20
+minBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+Instance.new("UICorner", minBtn).CornerRadius = UDim.new(1, 0)
 
--- Título
-local title = Instance.new("TextLabel", header)
-title.Text = "⚡ SANTZ HUB ⚡"
-title.Font = Enum.Font.GothamBold
-title.TextSize = 16
-title.TextColor3 = accentColor
-title.BackgroundTransparency = 1
-title.Position = UDim2.new(0, 10, 0, 8)
-title.Size = UDim2.new(1, -60, 1, -8)
-title.TextXAlignment = Enum.TextXAlignment.Left
-
--- Botão Minimizar
-local minimizeBtn = Instance.new("TextButton", header)
-minimizeBtn.Size = UDim2.new(0, 24, 0, 24)
-minimizeBtn.Position = UDim2.new(1, -32, 0.5, -12)
-minimizeBtn.Text = "-"
-minimizeBtn.Font = Enum.Font.GothamBlack
-minimizeBtn.TextSize = 20
-minimizeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-minimizeBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
-minimizeBtn.AutoButtonColor = true
-minimizeBtn.ZIndex = 10
-
-local miniCorner = Instance.new("UICorner", minimizeBtn)
-miniCorner.CornerRadius = UDim.new(1, 0)
-
--- Conteúdo Interno
-local content = Instance.new("Frame", mainFrame)
-content.Name = "ContentFrame"
+local content = Instance.new("Frame", main)
 content.Position = UDim2.new(0, 0, 0, 40)
 content.Size = UDim2.new(1, 0, 1, -40)
 content.BackgroundTransparency = 1
-content.ClipsDescendants = true
 
-local uiList = Instance.new("UIListLayout", content)
-uiList.SortOrder = Enum.SortOrder.LayoutOrder
-uiList.Padding = UDim.new(0, 8)
+local layout = Instance.new("UIListLayout", content)
+layout.Padding = UDim.new(0, 6)
+layout.SortOrder = Enum.SortOrder.LayoutOrder
 
--- Funções de Minimizar
-local isMinimized = false
-minimizeBtn.MouseButton1Click:Connect(function()
-	isMinimized = not isMinimized
-
-	local newSize = isMinimized and UDim2.new(0, 260, 0, 40) or UDim2.new(0, 260, 0, 320)
-	local tween = TweenService:Create(mainFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quad), {Size = newSize})
-	tween:Play()
+-- MINIMIZAR
+local minimized = false
+minBtn.MouseButton1Click:Connect(function()
+	minimized = not minimized
+	main.Size = minimized and UDim2.new(0, 320, 0, 40) or UDim2.new(0, 320, 0, 450)
 end)
 
--- Drag Manual (Mobile compatível)
-local dragging, dragInput, dragStart, startPos
-
-header.InputBegan:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseButton1 then
-		dragging = true
-		dragStart = input.Position
-		startPos = mainFrame.Position
-
-		input.Changed:Connect(function()
-			if input.UserInputState == Enum.UserInputState.End then
-				dragging = false
+-- Noclip
+local noclip = false
+local noclipConn
+createBtn("NoClip [TOGGLE]", content, function()
+	noclip = not noclip
+	if noclip then
+		noclipConn = RunService.Stepped:Connect(function()
+			for _, part in pairs(character:GetDescendants()) do
+				if part:IsA("BasePart") then part.CanCollide = false end
 			end
 		end)
+		notify("NoClip: Ativado", true)
+	else
+		if noclipConn then noclipConn:Disconnect() end
+		for _, part in pairs(character:GetDescendants()) do
+			if part:IsA("BasePart") then part.CanCollide = true end
+		end
+		notify("NoClip: Desativado", false)
 	end
 end)
 
-header.InputChanged:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseMovement then
-		dragInput = input
+-- TP Inimigo
+createBtn("TP Base Inimiga (ROOF)", content, function()
+	local found = false
+	for _, m in pairs(workspace:GetDescendants()) do
+		if m:IsA("Model") and m.Name:lower():find("base") and not m.Name:lower():find(player.Name:lower()) then
+			local p = m:FindFirstChildWhichIsA("Part")
+			if p then
+				character:MoveTo(p.Position + Vector3.new(0, 10, 0))
+				found = true
+				break
+			end
+		end
 	end
+	notify(found and "TP para base inimiga efetuado!" or "Base inimiga não encontrada", found)
 end)
 
-UserInputService.InputChanged:Connect(function(input)
-	if input == dragInput and dragging then
-		local delta = input.Position - dragStart
-		mainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X,
-									   startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+-- TP Minha Base
+createBtn("TP Minha Base", content, function()
+	local found = false
+	for _, m in pairs(workspace:GetDescendants()) do
+		if m:IsA("Model") and m.Name:lower():find(player.Name:lower()) then
+			local p = m:FindFirstChildWhichIsA("Part")
+			if p then
+				character:MoveTo(p.Position + Vector3.new(0, 10, 0))
+				found = true
+				break
+			end
+		end
+	end
+	notify(found and "TP para sua base efetuado!" or "Sua base não foi localizada", found)
+end)
+
+-- ESP
+createBtn("ESP Players", content, function()
+	for _, plr in pairs(Players:GetPlayers()) do
+		if plr ~= player then
+			local char = plr.Character
+			if char and not char:FindFirstChild("ESP") then
+				local box = Instance.new("BillboardGui", char)
+				box.Name = "ESP"
+				box.Size = UDim2.new(0, 100, 0, 40)
+				box.AlwaysOnTop = true
+				box.Adornee = char:FindFirstChild("Head")
+				local txt = Instance.new("TextLabel", box)
+				txt.Size = UDim2.new(1, 0, 1, 0)
+				txt.Text = plr.Name
+				txt.TextColor3 = Color3.fromRGB(255, 0, 0)
+				txt.BackgroundTransparency = 1
+				txt.Font = Enum.Font.GothamBold
+				txt.TextSize = 14
+			end
+		end
+	end
+	notify("ESP Ativado!", true)
+end)
+
+-- Fly Toggle
+local flying = false
+local flyConn
+createBtn("Fly [TOGGLE]", content, function()
+	flying = not flying
+	if flying then
+		local bodyGyro = Instance.new("BodyGyro", character.PrimaryPart)
+		bodyGyro.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
+		bodyGyro.P = 10000
+		local bodyVel = Instance.new("BodyVelocity", character.PrimaryPart)
+		bodyVel.MaxForce = Vector3.new(9e9, 9e9, 9e9)
+		bodyVel.Velocity = Vector3.new(0, 0, 0)
+		flyConn = RunService.RenderStepped:Connect(function()
+			bodyGyro.CFrame = workspace.CurrentCamera.CFrame
+			local dir = Vector3.new()
+			if UserInputService:IsKeyDown(Enum.KeyCode.W) then dir += workspace.CurrentCamera.CFrame.LookVector end
+			if UserInputService:IsKeyDown(Enum.KeyCode.S) then dir -= workspace.CurrentCamera.CFrame.LookVector end
+			if UserInputService:IsKeyDown(Enum.KeyCode.A) then dir -= workspace.CurrentCamera.CFrame.RightVector end
+			if UserInputService:IsKeyDown(Enum.KeyCode.D) then dir += workspace.CurrentCamera.CFrame.RightVector end
+			bodyVel.Velocity = dir * 60
+		end)
+		notify("Fly Ativado!", true)
+	else
+		if flyConn then flyConn:Disconnect() end
+		character.PrimaryPart:FindFirstChild("BodyVelocity"):Destroy()
+		character.PrimaryPart:FindFirstChild("BodyGyro"):Destroy()
+		notify("Fly Desativado!", false)
 	end
 end)
